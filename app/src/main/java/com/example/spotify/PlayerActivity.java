@@ -4,9 +4,14 @@ import static com.example.spotify.AlbumDetailsAdapter.albumFiles;
 import static com.example.spotify.ApplicationClass.ACTION_PLAY;
 import static com.example.spotify.ApplicationClass.ACTION_PREVIOUS;
 import static com.example.spotify.ApplicationClass.CHANNEL_ID_2;
+import static com.example.spotify.MainActivity.albumArtMini;
+import static com.example.spotify.MainActivity.artistMini;
 import static com.example.spotify.MainActivity.musicFiles;
+import static com.example.spotify.MainActivity.playPauseBtnMini;
 import static com.example.spotify.MainActivity.repeatBoolean;
 import static com.example.spotify.MainActivity.shuffleBoolean;
+import static com.example.spotify.MainActivity.songNameMini;
+import static com.example.spotify.ServiceMusic.musicService;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -99,6 +104,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     ScrollView lyricsScroll;
     SeekBar seekBar;
     int position = -1;
+    int currentPosition = 0;
     static ArrayList<MusicFiles> listSongs = new ArrayList<>();
     static Uri uri;
     static MediaPlayer mediaPlayer;
@@ -106,7 +112,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     private Thread playThread, prevThread, nextThread;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
-    MusicService musicService;
+//    MusicService musicService;
     MediaSessionCompat mediaSessionCompat;
     TextView lyrics;
     boolean isDarkMode = true;
@@ -259,6 +265,18 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             metaData(uri);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
+            songNameMini.setText(listSongs.get(position).getTitle());
+            artistMini.setText(listSongs.get(position).getArtist());
+            final long ONE_MEGABYTE = 1024*1024;
+//        Log.e("thumbnail", mFiles.get(position).getAlbum());
+            storageReference.child("Thumbnails/" + listSongs.get(position).getthumbnailName())
+                    .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            albumArtMini.setImageBitmap(bmp);
+                        }
+                    });
             seekBar.setMax(musicService.getDuration() / 1000);
             setSongLyric(listSongs.get(position).title);
             PlayerActivity.this.runOnUiThread(new Runnable() {
@@ -296,6 +314,18 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             metaData(uri);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
+            songNameMini.setText(listSongs.get(position).getTitle());
+            artistMini.setText(listSongs.get(position).getArtist());
+            final long ONE_MEGABYTE = 1024*1024;
+//        Log.e("thumbnail", mFiles.get(position).getAlbum());
+            storageReference.child("Thumbnails/" + listSongs.get(position).getthumbnailName())
+                    .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            albumArtMini.setImageBitmap(bmp);
+                        }
+                    });
             seekBar.setMax(musicService.getDuration() / 1000);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
@@ -335,6 +365,18 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             metaData(uri);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
+            songNameMini.setText(listSongs.get(position).getTitle());
+            artistMini.setText(listSongs.get(position).getArtist());
+            final long ONE_MEGABYTE = 1024*1024;
+//        Log.e("thumbnail", mFiles.get(position).getAlbum());
+            storageReference.child("Thumbnails/" + listSongs.get(position).getthumbnailName())
+                    .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            albumArtMini.setImageBitmap(bmp);
+                        }
+                    });
             seekBar.setMax(musicService.getDuration() / 1000);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
@@ -347,7 +389,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                 }
             });
             musicService.onCompleted();
-            musicService.showNotification(R.drawable.pause_btn);
+            musicService.showNotification(R.drawable.baseline_pause_24);
             playPauseBtn.setBackgroundResource(R.drawable.baseline_pause_24);
             musicService.start();
         }
@@ -371,6 +413,18 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             metaData(uri);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
+            songNameMini.setText(listSongs.get(position).getTitle());
+            artistMini.setText(listSongs.get(position).getArtist());
+            final long ONE_MEGABYTE = 1024*1024;
+//        Log.e("thumbnail", mFiles.get(position).getAlbum());
+            storageReference.child("Thumbnails/" + listSongs.get(position).getthumbnailName())
+                    .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            albumArtMini.setImageBitmap(bmp);
+                        }
+                    });
             seekBar.setMax(musicService.getDuration() / 1000);
 
             setSongLyric(listSongs.get(position).title);
@@ -390,6 +444,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             //mediaPlayer.stop();
         }
     }
+
     private int getRandom(int i) {
         Random random = new Random();
         return random.nextInt(i + 1);
@@ -430,6 +485,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         if (musicService.isPlaying()) {
             playPauseBtn.setImageResource(R.drawable.baseline_play_arrow_24);
             musicService.showNotification(R.drawable.baseline_play_arrow_24);
+            playPauseBtnMini.setImageResource(R.drawable.baseline_play_arrow_24);
             musicService.pause();
             seekBar.setMax(musicService.getDuration() / 1000);
             setSongLyric(listSongs.get(position).title);
@@ -448,6 +504,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         {
             playPauseBtn.setImageResource(R.drawable.baseline_pause_24);
             musicService.showNotification(R.drawable.baseline_pause_24);
+            playPauseBtnMini.setImageResource(R.drawable.baseline_pause_24);
             musicService.start();
             seekBar.setMax(musicService.getDuration() / 1000);
             setSongLyric(listSongs.get(position).title);
@@ -478,6 +535,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     }
     private void getIntentMethod() {
         position = getIntent().getIntExtra("position", -1);
+
+        currentPosition = getIntent().getIntExtra("currentPositionFromMain", 0);
+        listSongs = musicFiles;
+
         String sender = getIntent().getStringExtra("sender");
         if (sender!=null && sender.equals("albumDetails"))
         {
@@ -485,6 +546,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         } else{
             listSongs = musicFiles  ;
         }
+
         Log.e("Size: ", String.valueOf(musicFiles.size()));
         if (listSongs != null)
         {
@@ -493,6 +555,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         }
         Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("servicePosition", position);
+        intent.putExtra("serviceCurrentPosition", currentPosition);
         startService(intent);
 
     }
