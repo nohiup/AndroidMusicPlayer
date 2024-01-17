@@ -1,5 +1,7 @@
 package com.example.spotify;
 
+import static com.example.spotify.MainActivity.musicFiles;
+
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -31,7 +33,7 @@ import java.util.stream.Collectors;
  * Use the {@link LeaderboardFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LeaderboardFragment extends Fragment {
+public class LeaderboardFragment extends Fragment implements FragmentCallback {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,7 +47,7 @@ public class LeaderboardFragment extends Fragment {
     private View view;
 
     private RecyclerView list;
-    private MusicAdapterHorizontal adapter;
+    private LeaderBoardItem adapter;
     private ArrayList<MusicFiles> musicList;
     private final ArrayList<HashMap<String, Object>> indexSortList[] = new ArrayList[1];
     public LeaderboardFragment() {
@@ -78,72 +80,6 @@ public class LeaderboardFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-    private void fetchDataFromFirestore(){
-        FirebaseFirestore.getInstance().collection("Music").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()){
-                    int pos = 0;
-                    for (QueryDocumentSnapshot d: task.getResult()){
-                        String title = d.getString("name");
-                        String artist = d.getString("singer");
-                        //                                String path = d.getString("source");
-                        String album = d.getString("album");
-                        String id = d.getString("id");
-                        String duration = "";
-                        String path = d.getString("source");
-                        String genre = d.getString("genre");
-                        String language = d.getString("language");
-                        String releaseDate = d.getString("releaseDate");
-                        String thumbnailName = d.getString("thumbnailName");
-
-                        MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
-
-                        musicList.add(c);
-                        //pos = 0 here is the position of the element in musiclist?
-
-                        int counter = 0;
-                        ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
-                        if (likeShowingList == null || likeShowingList.isEmpty()){
-                            counter = 0;
-                        }
-                        else{
-                            counter = likeShowingList.size();
-                        }
-                        final int finalCounter = counter;
-                        final int finalPos = pos;
-                        indexSortList[0].add(new HashMap<String, Object>(){{
-                            put("id", d.getString("id"));
-                            put("like", finalCounter);
-                            put("index", finalPos);
-                        }});
-                        pos++;
-                    }
-
-                    //sorting
-                    ArrayList<HashMap<String, Object>> sortedList = (ArrayList<HashMap<String, Object>>) indexSortList[0].stream()
-                            .sorted(Comparator.comparingInt(m -> (int)m.get("like")))
-                            .collect(Collectors.toList());
-
-                    int size = sortedList.size();
-                    ArrayList<MusicFiles> finalMusicList = new ArrayList<MusicFiles>();
-                    for (int i = sortedList.size()-1; i >=0; i--) {
-                        finalMusicList.add(musicList.get((int) sortedList.get(i).get("index")));
-                        Log.d("Error check", finalMusicList.get(size-i-1).getTitle().toString());
-                    }
-
-                    musicList.clear();
-                    musicList.addAll(finalMusicList);
-                    Log.d("leaderboard", "onCreateView: " + musicList.size());
-//                    adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
-//                    list = view.findViewById(R.id.recycler_leaderboard);
-//                    list.setAdapter(adapter);
-//                    adapter.notifyDataSetChanged();
-                }
-            }
-
-        });
-    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -151,16 +87,32 @@ public class LeaderboardFragment extends Fragment {
 
         musicList = new ArrayList<MusicFiles>();
         indexSortList[0] = new ArrayList<HashMap<String, Object>>();
-        fetchDataFromFirestore();
         Log.d("leaderboard", "onCreateView: " + musicList.size());
+        LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
 
-
-        adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
+        adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, true);
         list = view.findViewById(R.id.recycler_leaderboard);
+        list.setLayoutManager(manager);
         list.setAdapter(adapter);
 
         return view;
     }
 
 
+    @Override
+    public void onMessageFromMainToFrag(String sender, MusicFiles musicFile) {
+        musicList.add(musicFile);
+        Log.d("Leader Board", "onMessageFromMainToFrag: " + musicFile.title + "Music files:" + musicFiles.size());
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onMusicFromMainToFrag(String sender, MusicFiles musicFiles) {
+
+    }
+
+    @Override
+    public void onMessageFromMainToFrag(String sender, boolean isDarkMode) {
+
+    }
 }

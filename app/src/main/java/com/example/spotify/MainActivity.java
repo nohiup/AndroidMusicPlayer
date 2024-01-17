@@ -63,12 +63,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class ServiceMusic {
     public static MusicService musicService;
@@ -113,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public static FloatingActionButton playPauseBtnMini;
     FrameLayout miniPlayer;
     ActionPlaying actionPlaying;
+    private ArrayList<MusicFiles> musicList;
+    private final ArrayList<HashMap<String, Object>> indexSortList[] = new ArrayList[1];
 
     static String current_fragment = "home";
 
@@ -476,6 +482,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
 
         if (id == R.id.leaderBoard)
         {
+            fetchDataFromFirestore();
             ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrameContainer, ldFragment);
             ft.commit();
@@ -626,5 +633,78 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                     }
                 });
 
+    }
+
+    private void fetchDataFromFirestore(){
+        musicList = new ArrayList<>();
+        indexSortList[0] = new ArrayList<>();
+        FirebaseFirestore.getInstance().collection("Music").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    int pos = 0;
+                    for (QueryDocumentSnapshot d: task.getResult()){
+                        String title = d.getString("name");
+                        String artist = d.getString("singer");
+                        //                                String path = d.getString("source");
+                        String album = d.getString("album");
+                        String id = d.getString("id");
+                        String duration = "";
+                        String path = d.getString("source");
+                        String genre = d.getString("genre");
+                        String language = d.getString("language");
+                        String releaseDate = d.getString("releaseDate");
+                        String thumbnailName = d.getString("thumbnailName");
+
+                        MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
+
+
+                        //pos = 0 here is the position of the element in musiclist?
+
+                        int counter = 0;
+                        ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
+                        if (likeShowingList == null || likeShowingList.isEmpty()){
+                            counter = 0;
+                        }
+                        else{
+                            counter = likeShowingList.size();
+                        }
+                        final int finalCounter = counter;
+                        final int finalPos = pos;
+                        c.setLike(counter);
+                        musicList.add(c);
+                        indexSortList[0].add(new HashMap<String, Object>(){{
+                            put("id", d.getString("id"));
+                            put("like", finalCounter);
+                            put("index", finalPos);
+                        }});
+                        pos++;
+                    }
+
+                    //sorting
+                    ArrayList<HashMap<String, Object>> sortedList = (ArrayList<HashMap<String, Object>>) indexSortList[0].stream()
+                            .sorted(Comparator.comparingInt(m -> (int)m.get("like")))
+                            .collect(Collectors.toList());
+
+                    int size = sortedList.size();
+                    ArrayList<MusicFiles> finalMusicList = new ArrayList<MusicFiles>();
+                    for (int i = sortedList.size()-1; i >=0; i--) {
+                        finalMusicList.add(musicList.get((int) sortedList.get(i).get("index")));
+                        Log.d("Error check", finalMusicList.get(size-i-1).getTitle().toString());
+                    }
+
+                    for (MusicFiles c: finalMusicList)
+                    {
+                        ldFragment.onMessageFromMainToFrag("MAIN", c);
+                    }
+                    Log.d("leaderboard", "onCreateView: " + musicList.size());
+//                    adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
+//                    list = view.findViewById(R.id.recycler_leaderboard);
+//                    list.setAdapter(adapter);
+//                    adapter.notifyDataSetChanged();
+                }
+            }
+
+        });
     }
 }
