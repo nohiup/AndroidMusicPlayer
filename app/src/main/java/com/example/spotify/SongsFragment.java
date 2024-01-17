@@ -34,7 +34,6 @@ public class SongsFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recylerView);
         recyclerView.setHasFixedSize(true);
         if (!(musicFiles.size() < 1)) {
-            musicAdapter  = new MusicAdapter(getContext(), musicFiles, isDarkMode);
             recyclerView.setAdapter(musicAdapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         }

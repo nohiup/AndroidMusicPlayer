@@ -247,6 +247,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             seekBar.setMax(musicService.getDuration() / 1000);
+            setSongLyric(listSongs.get(position).title);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -358,6 +359,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             seekBar.setMax(musicService.getDuration() / 1000);
+
+            setSongLyric(listSongs.get(position).title);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -416,6 +419,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             musicService.showNotification(R.drawable.baseline_play_arrow_24);
             musicService.pause();
             seekBar.setMax(musicService.getDuration() / 1000);
+            setSongLyric(listSongs.get(position).title);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -433,6 +437,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             musicService.showNotification(R.drawable.baseline_pause_24);
             musicService.start();
             seekBar.setMax(musicService.getDuration() / 1000);
+            setSongLyric(listSongs.get(position).title);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -493,6 +498,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         duration_total.setText(formattedTime(durationTotal));
         byte[] art = null;
         Bitmap bmp = null;
+        setSongLyric(listSongs.get(position).title);
 
         final long ONE_MEGABYTE = 1024*1024;
 //        Log.e("thumbnail", mFiles.get(position).getAlbum());
@@ -597,6 +603,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             musicService.createMediaPlayer(position);
             musicService.start();
             musicService.onCompleted();
+            setSongLyric(listSongs.get(position).title);
         }
 
     }
@@ -708,11 +715,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     private void setSongLyric(String songName) {
         //Note: Tên bài hát là tên của file txt nên hãy lấy songName của nó đi :)
-
+        Log.d("Song", "setSongLyric: " + songName);
         StorageReference ref = FirebaseStorage.getInstance().getReference();
         try {
             File localFile = File.createTempFile("temp", "txt");
-            ref.child("Lyrics").child(songName+".txt").getFile(localFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
+            ref.child("Lyric").child(songName+".txt").getFile(localFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
                     if (task.isSuccessful()) {
@@ -723,13 +730,13 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                             BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
                             String line = "";
                             while ((line = reader.readLine())!= null) {
-                                data+= line;
+                                data+= line + "\n";
+                                lyrics.setText(data);
                             }
                             reader.close();
                             Log.d("String res", data.toString());
 
-                            // Biến data chứa dữ liệu lyric của bài hát, có thể setText() tại đây.
-                            lyrics.setText(data);
+                            // Biến data chứa dữ liệu lyric của bài hát, có thể setText() tại đây
                         } catch (FileNotFoundException e) {
                             throw new RuntimeException(e);
                         } catch (IOException e) {
@@ -740,6 +747,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                 }
             });
         } catch (IOException e) {
+            Log.d("result", "setSongLyric: failed");
             throw new RuntimeException(e);
         }
     }
