@@ -48,14 +48,20 @@ import androidx.palette.graphics.Palette;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -601,6 +607,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             return true;
         }
 
+
         if (id == R.id.profile)
         {
             Intent intent = new Intent(PlayerActivity.this, ProfileActivity.class);
@@ -626,7 +633,35 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             return true;
         }
 
+        if  (id == R.id.addToPlaylist) {
+            final String currentId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            final CollectionReference albumRef = FirebaseFirestore.getInstance().collection("Albums");
+            final ArrayList<String>[] docList = new ArrayList[1];
 
+            albumRef.document(currentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        //Document exists
+                        if(task.getResult().exists()){
+                            //Bai hat dang o tren man hinh
+                            //List of all recent song on the firebase
+                            docList[0] = (ArrayList<String>) task.getResult().get("songList");
+                            docList[0].add(listSongs.get(position).getId());
+                            Log.d("Position showing id",listSongs.get(position).getId());
+                            albumRef.document(currentId).update("songList", docList[0]);
+                        }
+                        //Not exists, create a new one
+                        else {
+                            docList[0] = new ArrayList<String>();
+                            docList[0].add(listSongs.get(position).getId());
+                            Log.d("Position new", listSongs.get(position).getId());
+                            albumRef.document(currentId).update("songList", docList[0]);
+                        }
+                    }
+                }
+            });
+        }
         return false;
     }
 
