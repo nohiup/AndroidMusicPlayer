@@ -48,14 +48,23 @@ import androidx.palette.graphics.Palette;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -82,6 +91,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     StorageReference storageReference = storage.getReference();
     MusicService musicService;
     MediaSessionCompat mediaSessionCompat;
+    TextView lyrics;
     boolean isDarkMode = true;
 
     @Override
@@ -93,6 +103,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.menu_btn); //Ignore red line errors
         setSupportActionBar(toolbar);
+
+        lyrics = findViewById(R.id.lyrics);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout_player);
         NavigationView navigationView = findViewById(R.id.nav_player_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -656,5 +668,43 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     @Override
     public void onServiceDisconnected(ComponentName name) {
         musicService = null;
+    }
+
+    private void setSongLyric(String songName) {
+        //Note: Tên bài hát là tên của file txt nên hãy lấy songName của nó đi :)
+
+        StorageReference ref = FirebaseStorage.getInstance().getReference();
+        try {
+            File localFile = File.createTempFile("temp", "txt");
+            ref.child("Lyrics").child(songName+".txt").getFile(localFile).addOnCompleteListener(new OnCompleteListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        Log.d("result",task.getResult().toString());
+                        try {
+                            String data = "";
+                            FileInputStream fileInputStream = new FileInputStream(localFile);
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+                            String line = "";
+                            while ((line = reader.readLine())!= null) {
+                                data+= line;
+                            }
+                            reader.close();
+                            Log.d("String res", data.toString());
+
+                            // Biến data chứa dữ liệu lyric của bài hát, có thể setText() tại đây.
+                            lyrics.setText(data);
+                        } catch (FileNotFoundException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                    }
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

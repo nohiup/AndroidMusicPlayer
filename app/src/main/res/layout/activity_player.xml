@@ -163,6 +163,13 @@
 
         </RelativeLayout>
 
+        <TextView
+            android:id="@+id/lyrics"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_above="@id/seek_bar_layout"
+            android:layout_below="@id/song_artist"/>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
