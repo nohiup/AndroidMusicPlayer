@@ -1,6 +1,7 @@
 package com.example.spotify;
 
 public class MusicFiles {
+    String realID;
     String path;
     String title;
     String artist;
@@ -19,6 +20,7 @@ public class MusicFiles {
         this.album = album;
         this.duration = duration;
         this.id = id;
+        this.realID = realID;
     }
 
     public MusicFiles(String path, String title, String artist, String album, String duration, String id, String genre, String language, String releaseDate, String thumbnailName) {
@@ -32,6 +34,7 @@ public class MusicFiles {
         this.genre = genre;
         this.releaseDate = releaseDate;
         this.thumbnailName = thumbnailName;
+        this.realID = realID;
     }
 
     public MusicFiles() {
@@ -87,5 +90,10 @@ public class MusicFiles {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getRealID() {return this.realID;}
+    public void setRealID(String realID){
+        this.realID = realID;
     }
 }
