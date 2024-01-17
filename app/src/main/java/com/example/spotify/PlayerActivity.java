@@ -1,5 +1,6 @@
 package com.example.spotify;
 
+import static com.example.spotify.AlbumDetailsAdapter.albumFiles;
 import static com.example.spotify.ApplicationClass.ACTION_PLAY;
 import static com.example.spotify.ApplicationClass.ACTION_PREVIOUS;
 import static com.example.spotify.ApplicationClass.CHANNEL_ID_2;
@@ -477,7 +478,13 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     }
     private void getIntentMethod() {
         position = getIntent().getIntExtra("position", -1);
-        listSongs = musicFiles;
+        String sender = getIntent().getStringExtra("sender");
+        if (sender!=null && sender.equals("albumDetails"))
+        {
+            listSongs = albumFiles;
+        } else{
+            listSongs = musicFiles  ;
+        }
         Log.e("Size: ", String.valueOf(musicFiles.size()));
         if (listSongs != null)
         {
