@@ -62,6 +62,13 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyVieHolder>
         this.mContext = mContext;
     }
 
+    MusicAdapter(Context mContext, ArrayList<MusicFiles> mFilesNew, ArrayList<MusicFiles> songs, boolean mode) {
+        this.mFiles = songs;
+        this.mFilesNew = mFilesNew;
+        this.mContext = mContext;
+        this.isDarkMode = mode;
+    }
+
     void setMode(boolean isDarkMode)
     {
         this.isDarkMode = isDarkMode;

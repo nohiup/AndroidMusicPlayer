@@ -163,6 +163,28 @@
 
         </RelativeLayout>
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_above="@id/seek_bar_layout"
+            android:layout_below="@id/song_artist"
+            android:padding="30dp"
+            android:background="@color/dark_200"
+            android:backgroundTint="#05FFFFFF"
+            android:backgroundTintMode="src_over"
+            android:foregroundGravity="bottom"
+            android:fillViewport="true">
+            <TextView
+                android:padding="10dp"
+                android:id="@+id/lyrics"
+                android:text="Help!"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:lineBreakStyle="normal" />
+        </ScrollView>
+
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"

@@ -70,7 +70,7 @@ public class PlaylistFragment extends Fragment implements FragmentCallback {
         playlistLM.setOrientation(LinearLayoutManager.VERTICAL);
 
         playlist = (RecyclerView) view.findViewById(R.id.yourLibraryList);
-        playlistAdapter = new MusicAdapter(this.getContext(), musicFiles, isDarkMode);
+        playlistAdapter = new MusicAdapter(this.getContext(), musicFiles, musicFiles, isDarkMode);
         playlist.setLayoutManager(playlistLM);
         playlist.setAdapter(playlistAdapter);
 

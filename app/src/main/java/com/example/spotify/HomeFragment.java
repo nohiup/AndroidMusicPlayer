@@ -37,6 +37,7 @@ public class HomeFragment extends Fragment implements FragmentCallback{
 
     ArrayList<MusicFiles> ballad = new ArrayList<>();
     ArrayList<MusicFiles> youngGen = new ArrayList<>();
+    ArrayList<MusicFiles> musicFile = new ArrayList<>();
     MusicAdapter internationalSongAdapter, popSongAdapter,
             vietnameseSongAdapter, balladSongAdapter, youngGenAdapter;
     RecyclerView internationalView, pop,
@@ -105,11 +106,11 @@ public class HomeFragment extends Fragment implements FragmentCallback{
 
         main.onMessageFromFragToMain("HOME-FRAG", "mode");
 
-        vietnameseSongAdapter = new MusicAdapter(this.getContext(), vietnam, isDarkMode);
-        internationalSongAdapter = new MusicAdapter(this.getContext(), international, isDarkMode);
-        popSongAdapter = new MusicAdapter(this.getContext(), popMusic, isDarkMode);
-        balladSongAdapter = new MusicAdapter(this.getContext(), ballad, isDarkMode);
-        youngGenAdapter = new MusicAdapter(this.getContext(), youngGen, isDarkMode);
+        vietnameseSongAdapter = new MusicAdapter(this.getContext(), musicFile, vietnam, isDarkMode);
+        internationalSongAdapter = new MusicAdapter(this.getContext(), musicFile, international, isDarkMode);
+        popSongAdapter = new MusicAdapter(this.getContext(), musicFile, popMusic, isDarkMode);
+        balladSongAdapter = new MusicAdapter(this.getContext(), musicFile, ballad, isDarkMode);
+        youngGenAdapter = new MusicAdapter(this.getContext(), musicFile, youngGen, isDarkMode);
 
         pop.setLayoutManager(popLM);
         internationalView.setLayoutManager(internationalViewLM);
@@ -146,6 +147,8 @@ public class HomeFragment extends Fragment implements FragmentCallback{
     @Override
     public void onMessageFromMainToFrag(String sender, MusicFiles musicFiles) {
         if (sender.equals("MAIN")) {
+            musicFile.add(musicFiles);
+
             if (musicFiles.language.equals("Việt Nam"))
             {
                 vietnam.add(musicFiles);
@@ -183,11 +186,11 @@ public class HomeFragment extends Fragment implements FragmentCallback{
     public void onMessageFromMainToFrag(String sender, boolean isDarkMode) {
         this.isDarkMode = isDarkMode;
 
-        popSongAdapter = new MusicAdapter(this.getContext(), popMusic, isDarkMode);
-        vietnameseSongAdapter = new MusicAdapter(this.getContext(), vietnam, isDarkMode);
-        internationalSongAdapter = new MusicAdapter(this.getContext(), international, isDarkMode);
-        balladSongAdapter = new MusicAdapter(this.getContext(), ballad, isDarkMode);
-        youngGenAdapter = new MusicAdapter(this.getContext(), youngGen, isDarkMode);
+        popSongAdapter = new MusicAdapter(this.getContext(), musicFile,popMusic, isDarkMode);
+        vietnameseSongAdapter = new MusicAdapter(this.getContext(), musicFile, vietnam, isDarkMode);
+        internationalSongAdapter = new MusicAdapter(this.getContext(), musicFile, international, isDarkMode);
+        balladSongAdapter = new MusicAdapter(this.getContext(), musicFile, ballad, isDarkMode);
+        youngGenAdapter = new MusicAdapter(this.getContext(), musicFile, youngGen, isDarkMode);
 
         pop.setAdapter(popSongAdapter);
         vietnameseSong.setAdapter(vietnameseSongAdapter);
