@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     ConstraintLayout mainAct;
     FragmentTransaction ft;
     HomeFragment homeFragment;
+    LeaderboardFragment ldFragment;
     LinearLayout topNav;
     SearchFragment searchFragment;
     PlaylistFragment playlistFragment;
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             setSupportActionBar(toolbar);
             albumFragment = albumFragment.newInstance("album-Fragment");
             drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
+            ldFragment = ldFragment.newInstance("ld-fragment", "test");
             mainAct = findViewById(R.id.main_act);
             topNav = findViewById(R.id.top_nav);
             navigationView = findViewById(R.id.home_nav);
@@ -388,6 +390,15 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             item.setChecked(false);
 
             setMode();
+            return true;
+        }
+
+        if (id == R.id.leaderBoard)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, ldFragment);
+            ft.commit();
+
             return true;
         }
 
