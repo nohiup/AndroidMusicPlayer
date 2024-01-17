@@ -69,6 +69,8 @@ import java.io.InputStreamReader;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -614,6 +616,35 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
+        String songID = listSongs.get(position).getId();
+
+        if (id == R.id.like){
+            FirebaseFirestore.getInstance().collection("Music").whereEqualTo("id", songID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        //Got the document
+                        for (QueryDocumentSnapshot doc: task.getResult()){
+                            ArrayList<String> userList = (ArrayList<String>) doc.get("likeList");
+                            if (userList == null || userList.isEmpty()){
+                                userList = new ArrayList<String>();
+                            }
+                            if (userList.indexOf(FirebaseAuth.getInstance().getCurrentUser().getUid())==-1)
+                            {
+                                userList.add(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            }
+                            else {
+                                userList.remove(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            }
+                            FirebaseFirestore.getInstance().collection("Music").document(doc.getId()).update("likeList", userList);
+                        }
+                    }
+                    else {
+                        Log.e("Error", task.getException().toString());
+                    }
+                }
+            });
+        }
         if (id == R.id.nav_logout)
         {
             FirebaseAuth.getInstance().signOut();
