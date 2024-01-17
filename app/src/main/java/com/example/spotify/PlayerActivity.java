@@ -3,9 +3,12 @@ package com.example.spotify;
 import static com.example.spotify.ApplicationClass.ACTION_PLAY;
 import static com.example.spotify.ApplicationClass.ACTION_PREVIOUS;
 import static com.example.spotify.ApplicationClass.CHANNEL_ID_2;
+import static com.example.spotify.MainActivity.artistMini;
 import static com.example.spotify.MainActivity.musicFiles;
 import static com.example.spotify.MainActivity.repeatBoolean;
 import static com.example.spotify.MainActivity.shuffleBoolean;
+import static com.example.spotify.MainActivity.songNameMini;
+import static com.example.spotify.ServiceMusic.musicService;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -102,7 +105,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     private Thread playThread, prevThread, nextThread;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageReference = storage.getReference();
-    MusicService musicService;
+//    MusicService musicService;
     MediaSessionCompat mediaSessionCompat;
     TextView lyrics;
     boolean isDarkMode = true;
@@ -292,6 +295,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             metaData(uri);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
+            songNameMini.setText(listSongs.get(position).getTitle());
+            artistMini.setText(listSongs.get(position).getArtist());
             seekBar.setMax(musicService.getDuration() / 1000);
             PlayerActivity.this.runOnUiThread(new Runnable() {
                 @Override
@@ -367,6 +372,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             metaData(uri);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
+            songNameMini.setText(listSongs.get(position).getTitle());
+            artistMini.setText(listSongs.get(position).getArtist());
             seekBar.setMax(musicService.getDuration() / 1000);
 
             setSongLyric(listSongs.get(position).title);
