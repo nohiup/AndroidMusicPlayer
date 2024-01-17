@@ -1,5 +1,7 @@
 package com.example.spotify;
 
+import static com.example.spotify.ServiceMusic.musicService;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -53,6 +55,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
@@ -66,6 +69,10 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
+
+class ServiceMusic {
+    public static MusicService musicService;
+}
 
 public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
     static ArrayList<MusicFiles> musicFiles;
@@ -101,6 +108,11 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public static String SONG_TO_FRAG = null;
     public static final String ARTIST_NAME = "ARTIST_NAME";
     public static final String SONG_NAME = "SONG_NAME";
+    public static ImageView nextBtnMini, albumArtMini;
+    public static TextView artistMini, songNameMini;
+    public static FloatingActionButton playPauseBtnMini;
+    FrameLayout miniPlayer;
+    ActionPlaying actionPlaying;
 
     static String current_fragment = "home";
 
@@ -113,6 +125,14 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); //Ignore red line errors
             setSupportActionBar(toolbar);
+
+            miniPlayer = findViewById(R.id.miniplayer);
+            artistMini = findViewById(R.id.song_artist_miniPlayer);
+            songNameMini = findViewById(R.id.song_name_miniPlayer);
+            albumArtMini = findViewById(R.id.album_art_mini);
+            nextBtnMini = findViewById(R.id.skip_next_bottom);
+            playPauseBtnMini = findViewById(R.id.play_pause_miniPlayer);
+
             albumFragment = albumFragment.newInstance("album-Fragment");
             drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
             ldFragment = ldFragment.newInstance("ld-fragment", "test");
@@ -125,6 +145,67 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                     R.string.close_nav);
             drawerLayout.addDrawerListener(toggle);
             toggle.syncState();
+
+            artistMini.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = musicService.position;
+                    Intent intent = new Intent(v.getContext(), PlayerActivity.class);
+                    intent.putExtra("position", position);
+                    intent.putExtra("currentPositionFromMain", musicService.getCurrentPosition());
+                    v.getContext().startActivity(intent);
+                }
+            });
+
+            songNameMini.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = musicService.position;
+                    Intent intent = new Intent(v.getContext(), PlayerActivity.class);
+                    intent.putExtra("position", position);
+                    intent.putExtra("currentPositionFromMain", musicService.getCurrentPosition());
+                    v.getContext().startActivity(intent);
+                }
+            });
+
+            if (musicService != null) {
+                int position = musicService.position;
+                artistMini.setText(musicService.musicFiles.get(position).getArtist());
+                songNameMini.setText(musicService.musicFiles.get(position).getTitle());
+                if (musicService.isPlaying()) {
+                    playPauseBtnMini.setImageResource(R.drawable.baseline_pause_24);
+//                    Toast.makeText(this, "pause mini", Toast.LENGTH_SHORT).show();
+                } else {
+                    playPauseBtnMini.setImageResource(R.drawable.baseline_play_arrow_24);
+//                    Toast.makeText(this, "play mini", Toast.LENGTH_SHORT).show();
+                }
+
+                setArt(position);
+
+                playPauseBtnMini.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent serviceIntent = new Intent(v.getContext(), MusicService.class);
+                        serviceIntent.putExtra("ActionName", "playPause");
+                        v.getContext().startService(serviceIntent);
+                    }
+                });
+
+                nextBtnMini.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent serviceIntent = new Intent(v.getContext(), MusicService.class);
+                        serviceIntent.putExtra("ActionName", "next");
+                        v.getContext().startService(serviceIntent);
+                    }
+                });
+
+            } else {
+                artistMini.setText("Chưa chọn bài hát");
+                songNameMini.setText("Chưa chọn bài hát");
+                playPauseBtnMini.setEnabled(false);
+                nextBtnMini.setEnabled(false);
+            }
 
             bottomNavigationView = (BottomNavigationView)findViewById(R.id.bottomNavigationView);
             musicFiles = new ArrayList<>();
@@ -530,5 +611,20 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                         }
                     }
                 });
+    }
+
+    public void setArt(int position) {
+
+        final long ONE_MEGABYTE = 1024*1024;
+//        Log.e("thumbnail", mFiles.get(position).getAlbum());
+        storageReference.child("Thumbnails/" + musicFiles.get(position).getthumbnailName())
+                .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        albumArtMini.setImageBitmap(bmp);
+                    }
+                });
+
     }
 }

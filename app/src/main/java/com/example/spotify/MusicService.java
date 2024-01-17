@@ -59,11 +59,13 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public void onCompletion(MediaPlayer mp) {
         if (actionPlaying != null) {
             actionPlaying.nextBtnClicked();
+            showNotification(R.drawable.baseline_pause_24);
         }
-        //btn_nextClicked();
         createMediaPlayer(position);
         mediaPlayer.start();
         onCompleted();
+        //btn_nextClicked();
+
     }
 
     public class MyBinder extends Binder {
@@ -75,9 +77,10 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int myPosition = intent.getIntExtra("servicePosition", -1);
+        int myCurrentPosition = intent.getIntExtra("serviceCurrentPosition", 0);
         String actionName = intent.getStringExtra("ActionName");
         if (myPosition != -1) {
-            playMedia(myPosition);
+            playMedia(myPosition, myCurrentPosition);
         }
         if (actionName != null) {
             switch (actionName) {
@@ -98,7 +101,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         return START_STICKY;
     }
 
-    private void playMedia(int StartPosition) {
+    private void playMedia(int StartPosition, int Current) {
         musicFiles = listSongs;
         position = StartPosition;
         if (mediaPlayer != null) {
@@ -106,12 +109,14 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.release();
             if (musicFiles != null) {
                 createMediaPlayer(position);
+                seekTo(Current);
                 mediaPlayer.start();
             }
         }
         else
         {
             createMediaPlayer(position);
+            seekTo(Current);
             mediaPlayer.start();
         }
     }
