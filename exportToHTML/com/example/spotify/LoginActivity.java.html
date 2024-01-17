@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>LoginActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+LoginActivity.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.drawable.Drawable</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.bumptech.glide.load.resource.drawable.DrawableResource</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.material.snackbar.Snackbar</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.appcompat.app.AppCompatActivity</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.transition.Slide</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.Gravity</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.View</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Button</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.EditText</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.ImageView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.RelativeLayout</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.core.view.WindowCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.navigation.NavController</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.navigation.Navigation</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.navigation.ui.AppBarConfiguration</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.navigation.ui.NavigationUI</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.example.spotify.databinding.ActivityLoginBinding</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">LoginActivity </span><span class="s0">extends </span><span class="s1">AppCompatActivity {</span>
+
+    <span class="s0">private </span><span class="s1">Button login</span><span class="s0">, </span><span class="s1">signup</span><span class="s0">, </span><span class="s1">forgot</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">EditText pwd</span><span class="s0">, </span><span class="s1">email</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">RelativeLayout gmailLogin</span><span class="s0">, </span><span class="s1">facebookLogin</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">ImageView facebookIcon</span><span class="s0">, </span><span class="s1">gmailIcon</span><span class="s0">;</span>
+
+    <span class="s0">private </span><span class="s1">Slide slide</span><span class="s0">;</span>
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s1">setContentView(R.layout.activity_login)</span><span class="s0">;</span>
+
+        <span class="s1">login = (Button)findViewById(R.id.btnLogin)</span><span class="s0">;</span>
+        <span class="s1">signup = (Button)findViewById(R.id.btnSignUp)</span><span class="s0">;</span>
+        <span class="s1">forgot = (Button)findViewById(R.id.btnForgotPassword)</span><span class="s0">;</span>
+        <span class="s1">pwd = (EditText)findViewById(R.id.EtPwdLogin)</span><span class="s0">;</span>
+        <span class="s1">email = (EditText)findViewById(R.id.EtEmailLogin)</span><span class="s0">;</span>
+        <span class="s1">gmailLogin = (RelativeLayout)findViewById(R.id.gmailLogin)</span><span class="s0">;</span>
+        <span class="s1">facebookLogin = (RelativeLayout)findViewById(R.id.facebookLogin)</span><span class="s0">;</span>
+        <span class="s1">gmailIcon = (ImageView)findViewById(R.id.gmail_svg)</span><span class="s0">;</span>
+        <span class="s1">facebookIcon = (ImageView)findViewById(R.id.facebook_svg)</span><span class="s0">;</span>
+
+        <span class="s1">gmailLogin.setClickable(</span><span class="s0">true</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">gmailLogin.setFocusable(</span><span class="s0">true</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">gmailLogin.setFocusableInTouchMode(</span><span class="s0">false</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">facebookLogin.setClickable(</span><span class="s0">true</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">facebookLogin.setFocusable(</span><span class="s0">true</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">facebookLogin.setFocusableInTouchMode(</span><span class="s0">false</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">getWindow().setAllowEnterTransitionOverlap(</span><span class="s0">false</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">slide = </span><span class="s0">new </span><span class="s1">Slide(Gravity.BOTTOM)</span><span class="s0">;</span>
+        <span class="s1">slide.setDuration(</span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">getWindow().setExitTransition(slide)</span><span class="s0">;</span>
+
+        <span class="s1">gmailLogin.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s1">Toast.makeText(LoginActivity.</span><span class="s0">this, </span><span class="s3">&quot;Login with Email&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+
+        <span class="s1">facebookLogin.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s1">Toast.makeText(LoginActivity.</span><span class="s0">this, </span><span class="s3">&quot;Login with Facebook&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+
+        <span class="s1">login.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s1">login.setBackground(getResources().getDrawable(R.drawable.round_btn_selected))</span><span class="s0">;</span>
+                <span class="s1">String inputEmail = email.getText().toString()</span><span class="s0">;</span>
+                <span class="s0">if </span><span class="s1">(inputEmail.contains(</span><span class="s3">&quot; &quot;</span><span class="s1">))</span>
+                <span class="s1">{</span>
+                    <span class="s1">Toast.makeText(LoginActivity.</span><span class="s0">this, </span><span class="s3">&quot;Invalid Email&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+                    <span class="s1">login.setBackground(getResources().getDrawable(R.drawable.round_btn))</span><span class="s0">;</span>
+                    <span class="s0">return;</span>
+                <span class="s1">}</span>
+
+                <span class="s0">if </span><span class="s1">(inputEmail.equals(</span><span class="s3">&quot;lehuutri@gmail.com&quot;</span><span class="s1">) &amp;&amp; pwd.getText().toString().equals(</span><span class="s3">&quot;1234567&quot;</span><span class="s1">))</span>
+                <span class="s1">{</span>
+                    <span class="s1">Intent myIntent = </span><span class="s0">new </span><span class="s1">Intent(LoginActivity.</span><span class="s0">this, </span><span class="s1">MainActivity.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+                    <span class="s1">startActivity(myIntent)</span><span class="s0">;</span>
+                    <span class="s1">login.setBackground(getResources().getDrawable(R.drawable.round_btn))</span><span class="s0">;</span>
+                    <span class="s0">return;</span>
+                <span class="s1">}</span>
+
+                <span class="s1">login.setBackground(getResources().getDrawable(R.drawable.round_btn))</span><span class="s0">;</span>
+                <span class="s1">Toast.makeText(LoginActivity.</span><span class="s0">this, </span><span class="s3">&quot;Please check your password or register!&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+
+        <span class="s1">signup.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s1">Intent myIntent = </span><span class="s0">new </span><span class="s1">Intent(LoginActivity.</span><span class="s0">this, </span><span class="s1">SignUpActivity.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">startActivity(myIntent)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>

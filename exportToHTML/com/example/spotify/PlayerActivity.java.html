@@ -1,0 +1,724 @@
+<html>
+<head>
+<title>PlayerActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #808080;}
+.s4 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+PlayerActivity.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import static </span><span class="s1">com.example.spotify.ApplicationClass.ACTION_PLAY</span><span class="s0">;</span>
+<span class="s0">import static </span><span class="s1">com.example.spotify.ApplicationClass.ACTION_PREVIOUS</span><span class="s0">;</span>
+<span class="s0">import static </span><span class="s1">com.example.spotify.ApplicationClass.CHANNEL_ID_2</span><span class="s0">;</span>
+<span class="s0">import static </span><span class="s1">com.example.spotify.MainActivity.musicFiles</span><span class="s0">;</span>
+<span class="s0">import static </span><span class="s1">com.example.spotify.MainActivity.repeatBoolean</span><span class="s0">;</span>
+<span class="s0">import static </span><span class="s1">com.example.spotify.MainActivity.shuffleBoolean</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.annotation.SuppressLint</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.Notification</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.NotificationManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.PendingIntent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.ComponentName</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Context</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.ServiceConnection</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.Bitmap</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.BitmapFactory</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.Color</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.drawable.GradientDrawable</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.MediaMetadataRetriever</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.MediaPlayer</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.net.Uri</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Handler</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.IBinder</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.View</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.animation.Animation</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.animation.AnimationUtils</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.ImageView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.RelativeLayout</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.SeekBar</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.TextView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.annotation.NonNull</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.annotation.Nullable</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.appcompat.app.AppCompatActivity</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.core.app.NotificationCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.palette.graphics.Palette</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.bumptech.glide.Glide</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.gms.tasks.OnFailureListener</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.gms.tasks.OnSuccessListener</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.material.floatingactionbutton.FloatingActionButton</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.storage.FirebaseStorage</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.storage.StorageReference</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.util.ArrayList</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Random</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.support.v4.media.MediaMetadataCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.support.v4.media.session.MediaSessionCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.support.v4.media.session.PlaybackStateCompat</span><span class="s0">;</span>
+
+
+<span class="s0">public class </span><span class="s1">PlayerActivity </span><span class="s0">extends </span><span class="s1">AppCompatActivity </span><span class="s0">implements </span><span class="s1">MediaPlayer.OnCompletionListener</span><span class="s0">, </span><span class="s1">ActionPlaying {</span>
+    <span class="s1">TextView song_name</span><span class="s0">, </span><span class="s1">artist_name</span><span class="s0">, </span><span class="s1">duration_played</span><span class="s0">, </span><span class="s1">duration_total</span><span class="s0">;</span>
+    <span class="s1">ImageView cover_art</span><span class="s0">, </span><span class="s1">nextBtn</span><span class="s0">, </span><span class="s1">prevBtn</span><span class="s0">, </span><span class="s1">backBtn</span><span class="s0">, </span><span class="s1">shuffleBtn</span><span class="s0">, </span><span class="s1">repeatBtn</span><span class="s0">;</span>
+    <span class="s1">FloatingActionButton playPauseBtn</span><span class="s0">;</span>
+    <span class="s1">SeekBar seekBar</span><span class="s0">;</span>
+    <span class="s0">int </span><span class="s1">position = -</span><span class="s2">1</span><span class="s0">;</span>
+    <span class="s0">static </span><span class="s1">ArrayList&lt;MusicFiles&gt; listSongs = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+    <span class="s0">static </span><span class="s1">Uri uri</span><span class="s0">;</span>
+    <span class="s0">static </span><span class="s1">MediaPlayer mediaPlayer</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">Handler handler = </span><span class="s0">new </span><span class="s1">Handler()</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">Thread playThread</span><span class="s0">, </span><span class="s1">prevThread</span><span class="s0">, </span><span class="s1">nextThread</span><span class="s0">;</span>
+    <span class="s1">FirebaseStorage storage = FirebaseStorage.getInstance()</span><span class="s0">;</span>
+    <span class="s1">StorageReference storageReference = storage.getReference()</span><span class="s0">;</span>
+    <span class="s3">//    MusicService musicService;</span>
+    <span class="s1">MediaSessionCompat mediaSessionCompat</span><span class="s0">;</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s1">setContentView(R.layout.activity_player)</span><span class="s0">;</span>
+        <span class="s1">initViews()</span><span class="s0">;</span>
+        <span class="s1">getIntentMethod()</span><span class="s0">;</span>
+
+        <span class="s1">mediaSessionCompat = </span><span class="s0">new </span><span class="s1">MediaSessionCompat(getBaseContext()</span><span class="s0">, </span><span class="s4">&quot;My audio&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">seekBar.setOnSeekBarChangeListener(</span><span class="s0">new </span><span class="s1">SeekBar.OnSeekBarChangeListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onProgressChanged(SeekBar seekBar</span><span class="s0">, int </span><span class="s1">progress</span><span class="s0">, boolean </span><span class="s1">fromUser) {</span>
+                <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null </span><span class="s1">&amp;&amp; fromUser)</span>
+                <span class="s1">{</span>
+                    <span class="s1">mediaPlayer.seekTo(progress * </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onStartTrackingTouch(SeekBar seekBar) {</span>
+
+            <span class="s1">}</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onStopTrackingTouch(SeekBar seekBar) {</span>
+
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+        <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">run() {</span>
+                <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                    <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                    <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">duration_played.setText(formattedTime(mCurrentPosition))</span><span class="s0">;</span>
+                <span class="s1">}</span>
+                <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+
+        <span class="s1">shuffleBtn.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s0">if </span><span class="s1">(shuffleBoolean)</span>
+                <span class="s1">{</span>
+                    <span class="s1">shuffleBoolean = </span><span class="s0">false;</span>
+                    <span class="s1">shuffleBtn.setImageResource(R.drawable.baseline_shuffle_off)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+                <span class="s0">else</span>
+                <span class="s1">{</span>
+                    <span class="s1">shuffleBoolean = </span><span class="s0">true;</span>
+                    <span class="s1">shuffleBtn.setImageResource(R.drawable.baseline_shuffle_on_24)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+        <span class="s1">repeatBtn.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s0">if </span><span class="s1">(repeatBoolean)</span>
+                <span class="s1">{</span>
+                    <span class="s1">repeatBoolean = </span><span class="s0">false;</span>
+                    <span class="s1">repeatBtn.setImageResource(R.drawable.baseline_repeat_off)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+                <span class="s0">else</span>
+                <span class="s1">{</span>
+                    <span class="s1">repeatBoolean = </span><span class="s0">true;</span>
+                    <span class="s1">repeatBtn.setImageResource(R.drawable.baseline_repeat_on_24)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+
+        <span class="s1">backBtn.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+
+                <span class="s1">Intent intent = </span><span class="s0">new </span><span class="s1">Intent(v.getContext()</span><span class="s0">, </span><span class="s1">MainActivity.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">intent.putExtra(</span><span class="s4">&quot;position&quot;</span><span class="s0">, </span><span class="s1">position)</span><span class="s0">;</span>
+                <span class="s1">v.getContext().startActivity(intent)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">onResume() {</span>
+<span class="s3">//        Intent intent = new Intent(this, MusicService.class);</span>
+<span class="s3">//        bindService(intent, this, BIND_AUTO_CREATE);</span>
+        <span class="s1">playThreadBtn()</span><span class="s0">;</span>
+        <span class="s1">prevThreadBtn()</span><span class="s0">;</span>
+        <span class="s1">nextThreadBtn()</span><span class="s0">;</span>
+        <span class="s0">super</span><span class="s1">.onResume()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+<span class="s3">//    @Override</span>
+<span class="s3">//    protected void onPause() {</span>
+<span class="s3">//        super.onPause();</span>
+<span class="s3">//        unbindService(this);</span>
+<span class="s3">//    }</span>
+
+    <span class="s0">private void </span><span class="s1">prevThreadBtn() {</span>
+        <span class="s1">prevThread = </span><span class="s0">new </span><span class="s1">Thread()</span>
+        <span class="s1">{</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">run() {</span>
+                <span class="s0">super</span><span class="s1">.run()</span><span class="s0">;</span>
+                <span class="s1">prevBtn.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                        <span class="s1">prevBtnClicked()</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span><span class="s0">;</span>
+        <span class="s1">prevThread.start()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">public void </span><span class="s1">prevBtnClicked() {</span>
+        <span class="s0">if </span><span class="s1">(mediaPlayer.isPlaying())</span>
+        <span class="s1">{</span>
+            <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+            <span class="s1">{</span>
+                <span class="s1">position = getRandom(listSongs.size() - </span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+            <span class="s0">else</span>
+            <span class="s1">{</span>
+                <span class="s0">if </span><span class="s1">(!shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+                <span class="s1">{</span>
+                    <span class="s1">position = ((position - </span><span class="s2">1</span><span class="s1">) &lt; </span><span class="s2">0 </span><span class="s1">? (listSongs.size() - </span><span class="s2">1</span><span class="s1">) : (position - </span><span class="s2">1</span><span class="s1">))</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+
+            <span class="s1">uri = Uri.parse(listSongs.get(position).getPath())</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer = MediaPlayer.create(getApplicationContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+            <span class="s1">metaData(uri)</span><span class="s0">;</span>
+
+            <span class="s1">song_name.setText(listSongs.get(position).getTitle())</span><span class="s0">;</span>
+            <span class="s1">artist_name.setText(listSongs.get(position).getArtist())</span><span class="s0">;</span>
+            <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+
+            <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public void </span><span class="s1">run() {</span>
+                    <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                        <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                        <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                    <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">playPauseBtn.setBackgroundResource(R.drawable.baseline_pause_24)</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">else</span>
+        <span class="s1">{</span>
+            <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+            <span class="s1">{</span>
+                <span class="s1">position = getRandom(listSongs.size() - </span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+            <span class="s0">else</span>
+            <span class="s1">{</span>
+                <span class="s0">if </span><span class="s1">(!shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+                <span class="s1">{</span>
+                    <span class="s1">position = ((position - </span><span class="s2">1</span><span class="s1">) &lt; </span><span class="s2">0 </span><span class="s1">? (listSongs.size() - </span><span class="s2">1</span><span class="s1">) : (position - </span><span class="s2">1</span><span class="s1">))</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+            <span class="s1">uri = Uri.parse(listSongs.get(position).getPath())</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer = MediaPlayer.create(getApplicationContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+            <span class="s1">metaData(uri)</span><span class="s0">;</span>
+
+            <span class="s1">song_name.setText(listSongs.get(position).getTitle())</span><span class="s0">;</span>
+            <span class="s1">artist_name.setText(listSongs.get(position).getArtist())</span><span class="s0">;</span>
+            <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public void </span><span class="s1">run() {</span>
+                    <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                        <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                        <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                    <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">playPauseBtn.setBackgroundResource(R.drawable.baseline_play_arrow_24)</span><span class="s0">;</span>
+            <span class="s3">//mediaPlayer.start();</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+    <span class="s0">public void </span><span class="s1">nextBtnClicked() {</span>
+        <span class="s0">if </span><span class="s1">(mediaPlayer.isPlaying())</span>
+        <span class="s1">{</span>
+            <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+            <span class="s1">{</span>
+                <span class="s1">position = getRandom(listSongs.size() - </span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+            <span class="s0">else</span>
+            <span class="s1">{</span>
+                <span class="s0">if </span><span class="s1">(!shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+                <span class="s1">{</span>
+                    <span class="s1">position = ((position + </span><span class="s2">1</span><span class="s1">) % listSongs.size())</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+
+            <span class="s1">uri = Uri.parse(listSongs.get(position).getPath())</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer = MediaPlayer.create(getApplicationContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+            <span class="s1">metaData(uri)</span><span class="s0">;</span>
+
+            <span class="s1">song_name.setText(listSongs.get(position).getTitle())</span><span class="s0">;</span>
+            <span class="s1">artist_name.setText(listSongs.get(position).getArtist())</span><span class="s0">;</span>
+            <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public void </span><span class="s1">run() {</span>
+                    <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                        <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                        <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                    <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">playPauseBtn.setBackgroundResource(R.drawable.baseline_pause_24)</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">else</span>
+        <span class="s1">{</span>
+            <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+            <span class="s1">{</span>
+                <span class="s1">position = getRandom(listSongs.size() - </span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+            <span class="s0">else</span>
+            <span class="s1">{</span>
+                <span class="s0">if </span><span class="s1">(!shuffleBoolean &amp;&amp; !repeatBoolean)</span>
+                <span class="s1">{</span>
+                    <span class="s1">position = ((position + </span><span class="s2">1</span><span class="s1">) % listSongs.size())</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+            <span class="s1">uri = Uri.parse(listSongs.get(position).getPath())</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer = MediaPlayer.create(getApplicationContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+            <span class="s1">metaData(uri)</span><span class="s0">;</span>
+            <span class="s1">song_name.setText(listSongs.get(position).getTitle())</span><span class="s0">;</span>
+            <span class="s1">artist_name.setText(listSongs.get(position).getArtist())</span><span class="s0">;</span>
+            <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public void </span><span class="s1">run() {</span>
+                    <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                        <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                        <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                    <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">playPauseBtn.setBackgroundResource(R.drawable.baseline_play_arrow_24)</span><span class="s0">;</span>
+            <span class="s3">//mediaPlayer.stop();</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+    <span class="s0">private int </span><span class="s1">getRandom(</span><span class="s0">int </span><span class="s1">i) {</span>
+        <span class="s1">Random random = </span><span class="s0">new </span><span class="s1">Random()</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s1">random.nextInt(i + </span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">private void </span><span class="s1">nextThreadBtn() {</span>
+        <span class="s1">nextThread = </span><span class="s0">new </span><span class="s1">Thread()</span>
+        <span class="s1">{</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">run() {</span>
+                <span class="s0">super</span><span class="s1">.run()</span><span class="s0">;</span>
+                <span class="s1">nextBtn.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                        <span class="s1">nextBtnClicked()</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span><span class="s0">;</span>
+        <span class="s1">nextThread.start()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">private void </span><span class="s1">playThreadBtn() {</span>
+        <span class="s1">playThread = </span><span class="s0">new </span><span class="s1">Thread()</span>
+        <span class="s1">{</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">run() {</span>
+                <span class="s0">super</span><span class="s1">.run()</span><span class="s0">;</span>
+                <span class="s1">playPauseBtn.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                        <span class="s1">playPauseBtnClicked()</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span><span class="s0">;</span>
+        <span class="s1">playThread.start()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">public void </span><span class="s1">playPauseBtnClicked() {</span>
+        <span class="s0">if </span><span class="s1">(mediaPlayer.isPlaying()) {</span>
+            <span class="s1">playPauseBtn.setImageResource(R.drawable.baseline_play_arrow_24)</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.pause()</span><span class="s0">;</span>
+            <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public void </span><span class="s1">run() {</span>
+                    <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                        <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                        <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                    <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">else</span>
+        <span class="s1">{</span>
+            <span class="s1">playPauseBtn.setImageResource(R.drawable.baseline_pause_24)</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+            <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">PlayerActivity.</span><span class="s0">this</span><span class="s1">.runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public void </span><span class="s1">run() {</span>
+                    <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                        <span class="s0">int </span><span class="s1">mCurrentPosition = mediaPlayer.getCurrentPosition() / </span><span class="s2">1000</span><span class="s0">;</span>
+                        <span class="s1">seekBar.setProgress(mCurrentPosition)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                    <span class="s1">handler.postDelayed(</span><span class="s0">this, </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+    <span class="s0">private </span><span class="s1">String formattedTime(</span><span class="s0">int </span><span class="s1">mCurrentPosition) {</span>
+        <span class="s1">String totalout = </span><span class="s4">&quot;&quot;</span><span class="s0">;</span>
+        <span class="s1">String totalNew = </span><span class="s4">&quot;&quot;</span><span class="s0">;</span>
+        <span class="s1">String seconds = String.valueOf(mCurrentPosition % </span><span class="s2">60</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">String minutes = String.valueOf(mCurrentPosition / </span><span class="s2">60</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">totalout = minutes + </span><span class="s4">&quot;:&quot; </span><span class="s1">+ seconds</span><span class="s0">;</span>
+        <span class="s1">totalNew = minutes + </span><span class="s4">&quot;:&quot;</span><span class="s1">+</span><span class="s4">&quot;0&quot;</span><span class="s1">+seconds</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(seconds.length() == </span><span class="s2">1</span><span class="s1">)</span>
+        <span class="s1">{</span>
+            <span class="s0">return </span><span class="s1">totalNew</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">totalout</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">private void </span><span class="s1">getIntentMethod() {</span>
+        <span class="s1">position = getIntent().getIntExtra(</span><span class="s4">&quot;position&quot;</span><span class="s0">, </span><span class="s1">-</span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">listSongs = musicFiles</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(listSongs != </span><span class="s0">null</span><span class="s1">)</span>
+        <span class="s1">{</span>
+            <span class="s1">playPauseBtn.setImageResource(R.drawable.baseline_pause_24)</span><span class="s0">;</span>
+            <span class="s1">uri = Uri.parse(listSongs.get(position).getPath())</span><span class="s0">;</span>
+        <span class="s1">}</span>
+<span class="s3">//        if (musicService != null)</span>
+<span class="s3">//        {</span>
+<span class="s3">//            musicService.stop();</span>
+<span class="s3">//            musicService.release();</span>
+<span class="s3">//            musicService.createMediaPlayer(position);</span>
+<span class="s3">//            musicService.start();</span>
+<span class="s3">//        }</span>
+<span class="s3">//        else</span>
+<span class="s3">//        {</span>
+<span class="s3">//            musicService.createMediaPlayer(position);</span>
+<span class="s3">//            musicService.start();</span>
+<span class="s3">//        }</span>
+
+        <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+            <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+        <span class="s1">mediaPlayer = MediaPlayer.create(getApplicationContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+        <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+        <span class="s1">seekBar.setMax(mediaPlayer.getDuration() / </span><span class="s2">1000</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">song_name.setText(listSongs.get(position).getTitle())</span><span class="s0">;</span>
+        <span class="s1">artist_name.setText(listSongs.get(position).getArtist())</span><span class="s0">;</span>
+        <span class="s1">listSongs.get(position).setDuration(String.valueOf(mediaPlayer.getDuration()))</span><span class="s0">;</span>
+        <span class="s1">metaData(uri)</span><span class="s0">;</span>
+
+
+<span class="s3">//        Intent intent = new Intent(this, MusicService.class);</span>
+<span class="s3">//        intent.putExtra(&quot;servicePosition&quot;, position);</span>
+<span class="s3">//        startService(intent);</span>
+
+    <span class="s1">}</span>
+    <span class="s0">private void </span><span class="s1">initViews() {</span>
+        <span class="s1">song_name = findViewById(R.id.song_name)</span><span class="s0">;</span>
+        <span class="s1">artist_name = findViewById(R.id.song_artist)</span><span class="s0">;</span>
+        <span class="s1">duration_played = findViewById(R.id.durationPlayed)</span><span class="s0">;</span>
+        <span class="s1">duration_total = findViewById(R.id.durationTotal)</span><span class="s0">;</span>
+        <span class="s1">cover_art = findViewById(R.id.cover_art)</span><span class="s0">;</span>
+        <span class="s1">nextBtn = findViewById(R.id.id_next)</span><span class="s0">;</span>
+        <span class="s1">prevBtn = findViewById(R.id.id_prev)</span><span class="s0">;</span>
+        <span class="s1">backBtn = findViewById(R.id.back_btn)</span><span class="s0">;</span>
+        <span class="s1">shuffleBtn = findViewById(R.id.id_shuffle)</span><span class="s0">;</span>
+        <span class="s1">repeatBtn = findViewById(R.id.id_repeat)</span><span class="s0">;</span>
+        <span class="s1">playPauseBtn = findViewById(R.id.play_pause)</span><span class="s0">;</span>
+        <span class="s1">seekBar = findViewById(R.id.seekBar)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">private  void </span><span class="s1">metaData(Uri uri) {</span>
+        <span class="s1">MediaMetadataRetriever retriever = </span><span class="s0">new </span><span class="s1">MediaMetadataRetriever()</span><span class="s0">;</span>
+        <span class="s1">retriever.setDataSource(uri.toString())</span><span class="s0">;</span>
+        <span class="s0">int </span><span class="s1">durationTotal = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) / </span><span class="s2">1000</span><span class="s0">;</span>
+        <span class="s1">duration_total.setText(formattedTime(durationTotal))</span><span class="s0">;</span>
+        <span class="s0">byte</span><span class="s1">[] art = </span><span class="s0">null;</span>
+        <span class="s1">Bitmap bmp = </span><span class="s0">null;</span>
+
+        <span class="s0">final long </span><span class="s1">ONE_MEGABYTE = </span><span class="s2">1024</span><span class="s1">*</span><span class="s2">1024</span><span class="s0">;</span>
+<span class="s3">//        Log.e(&quot;thumbnail&quot;, mFiles.get(position).getAlbum());</span>
+        <span class="s1">storageReference.child(</span><span class="s4">&quot;Thumbnails/&quot; </span><span class="s1">+ listSongs.get(position).getAlbum())</span>
+                <span class="s1">.getBytes(ONE_MEGABYTE).addOnSuccessListener(</span><span class="s0">new </span><span class="s1">OnSuccessListener&lt;</span><span class="s0">byte</span><span class="s1">[]&gt;() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onSuccess(</span><span class="s0">byte</span><span class="s1">[] bytes) {</span>
+                        <span class="s1">Bitmap bitmap = BitmapFactory.decodeByteArray(bytes</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s1">bytes.length)</span><span class="s0">;</span>
+                        <span class="s1">ImageAnimation(PlayerActivity.</span><span class="s0">this, </span><span class="s1">cover_art</span><span class="s0">, </span><span class="s1">bitmap)</span><span class="s0">;</span>
+                        <span class="s1">Palette.from(bitmap).generate(</span><span class="s0">new </span><span class="s1">Palette.PaletteAsyncListener() {</span>
+                            <span class="s1">@Override</span>
+                            <span class="s0">public void </span><span class="s1">onGenerated(@Nullable Palette palette) {</span>
+                                <span class="s1">Palette.Swatch swatch = palette.getDominantSwatch()</span><span class="s0">;</span>
+                                <span class="s0">if </span><span class="s1">(swatch != </span><span class="s0">null</span><span class="s1">)</span>
+                                <span class="s1">{</span>
+                                    <span class="s1">ImageView gradient = findViewById(R.id.imageViewGradient)</span><span class="s0">;</span>
+                                    <span class="s1">RelativeLayout mContainer = findViewById(R.id.mContainer)</span><span class="s0">;</span>
+                                    <span class="s1">gradient.setBackgroundResource(R.drawable.gradient_bg)</span><span class="s0">;</span>
+                                    <span class="s1">mContainer.setBackgroundResource(R.drawable.main_bg)</span><span class="s0">;</span>
+                                    <span class="s1">GradientDrawable gradientDrawable = </span><span class="s0">new </span><span class="s1">GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP</span><span class="s0">,</span>
+                                            <span class="s0">new int</span><span class="s1">[]{swatch.getRgb()</span><span class="s0">, </span><span class="s2">0x00000000</span><span class="s1">})</span><span class="s0">;</span>
+                                    <span class="s1">gradient.setBackground(gradientDrawable)</span><span class="s0">;</span>
+                                    <span class="s1">GradientDrawable gradientDrawableBg = </span><span class="s0">new </span><span class="s1">GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP</span><span class="s0">,</span>
+                                            <span class="s0">new int</span><span class="s1">[]{swatch.getRgb()</span><span class="s0">, </span><span class="s1">swatch.getRgb()})</span><span class="s0">;</span>
+                                    <span class="s1">mContainer.setBackground(gradientDrawableBg)</span><span class="s0">;</span>
+                                    <span class="s1">song_name.setTextColor(swatch.getTitleTextColor())</span><span class="s0">;</span>
+                                    <span class="s1">artist_name.setTextColor(swatch.getBodyTextColor())</span><span class="s0">;</span>
+                                <span class="s1">}</span>
+                                <span class="s0">else</span>
+                                <span class="s1">{</span>
+                                    <span class="s1">ImageView gradient = findViewById(R.id.imageViewGradient)</span><span class="s0">;</span>
+                                    <span class="s1">RelativeLayout mContainer = findViewById(R.id.mContainer)</span><span class="s0">;</span>
+                                    <span class="s1">gradient.setBackgroundResource(R.drawable.gradient_bg)</span><span class="s0">;</span>
+                                    <span class="s1">mContainer.setBackgroundResource(R.drawable.main_bg)</span><span class="s0">;</span>
+                                    <span class="s1">GradientDrawable gradientDrawable = </span><span class="s0">new </span><span class="s1">GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP</span><span class="s0">,</span>
+                                            <span class="s0">new int</span><span class="s1">[]{</span><span class="s2">0xff000000</span><span class="s0">, </span><span class="s2">0x00000000</span><span class="s1">})</span><span class="s0">;</span>
+                                    <span class="s1">gradient.setBackground(gradientDrawable)</span><span class="s0">;</span>
+                                    <span class="s1">GradientDrawable gradientDrawableBg = </span><span class="s0">new </span><span class="s1">GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP</span><span class="s0">,</span>
+                                            <span class="s0">new int</span><span class="s1">[]{</span><span class="s2">0xff000000</span><span class="s0">, </span><span class="s2">0xff000000</span><span class="s1">})</span><span class="s0">;</span>
+                                    <span class="s1">mContainer.setBackground(gradientDrawableBg)</span><span class="s0">;</span>
+                                    <span class="s1">song_name.setTextColor(Color.WHITE)</span><span class="s0">;</span>
+                                    <span class="s1">artist_name.setTextColor(Color.DKGRAY)</span><span class="s0">;</span>
+                                <span class="s1">}</span>
+                            <span class="s1">}</span>
+                        <span class="s1">})</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">}).addOnFailureListener(</span><span class="s0">new </span><span class="s1">OnFailureListener() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onFailure(@NonNull Exception e) {</span>
+                        <span class="s1">Glide.with(PlayerActivity.</span><span class="s0">this</span><span class="s1">)</span>
+                                <span class="s1">.asBitmap()</span>
+                                <span class="s1">.load(R.drawable.anh)</span>
+                                <span class="s1">.into(cover_art)</span><span class="s0">;</span>
+                        <span class="s1">song_name.setTextColor(Color.WHITE)</span><span class="s0">;</span>
+                        <span class="s1">artist_name.setTextColor(Color.DKGRAY)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+
+<span class="s3">//        if (art != null) {</span>
+<span class="s3">//            bmp = BitmapFactory.decodeByteArray(art, 0, art.length);</span>
+<span class="s3">//            ImageAnimation(this, cover_art, bitmap);</span>
+<span class="s3">//            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {</span>
+<span class="s3">//                @Override</span>
+<span class="s3">//                public void onGenerated(@Nullable Palette palette) {</span>
+<span class="s3">//                    Palette.Swatch swatch = palette.getDominantSwatch();</span>
+<span class="s3">//                    if (swatch != null)</span>
+<span class="s3">//                    {</span>
+<span class="s3">//                        ImageView gradient = findViewById(R.id.imageViewGradient);</span>
+<span class="s3">//                        RelativeLayout mContainer = findViewById(R.id.mContainer);</span>
+<span class="s3">//                        gradient.setBackgroundResource(R.drawable.gradient_bg);</span>
+<span class="s3">//                        mContainer.setBackgroundResource(R.drawable.main_bg);</span>
+<span class="s3">//                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,</span>
+<span class="s3">//                                new int[]{swatch.getRgb(), 0x00000000});</span>
+<span class="s3">//                        gradient.setBackground(gradientDrawable);</span>
+<span class="s3">//                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,</span>
+<span class="s3">//                                new int[]{swatch.getRgb(), swatch.getRgb()});</span>
+<span class="s3">//                        mContainer.setBackground(gradientDrawableBg);</span>
+<span class="s3">//                        song_name.setTextColor(swatch.getTitleTextColor());</span>
+<span class="s3">//                        artist_name.setTextColor(swatch.getBodyTextColor());</span>
+<span class="s3">//                    }</span>
+<span class="s3">//                    else</span>
+<span class="s3">//                    {</span>
+<span class="s3">//                        ImageView gradient = findViewById(R.id.imageViewGradient);</span>
+<span class="s3">//                        RelativeLayout mContainer = findViewById(R.id.mContainer);</span>
+<span class="s3">//                        gradient.setBackgroundResource(R.drawable.gradient_bg);</span>
+<span class="s3">//                        mContainer.setBackgroundResource(R.drawable.main_bg);</span>
+<span class="s3">//                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,</span>
+<span class="s3">//                                new int[]{0xff000000, 0x00000000});</span>
+<span class="s3">//                        gradient.setBackground(gradientDrawable);</span>
+<span class="s3">//                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,</span>
+<span class="s3">//                                new int[]{0xff000000, 0xff000000});</span>
+<span class="s3">//                        mContainer.setBackground(gradientDrawableBg);</span>
+<span class="s3">//                        song_name.setTextColor(Color.WHITE);</span>
+<span class="s3">//                        artist_name.setTextColor(Color.DKGRAY);</span>
+<span class="s3">//                    }</span>
+<span class="s3">//                }</span>
+<span class="s3">//            });</span>
+<span class="s3">//        }</span>
+<span class="s3">//        else</span>
+<span class="s3">//        {</span>
+<span class="s3">//            Glide.with(this)</span>
+<span class="s3">//                    .asBitmap()</span>
+<span class="s3">//                    .load(R.drawable.anh)</span>
+<span class="s3">//                    .into(cover_art);</span>
+<span class="s3">//            song_name.setTextColor(Color.WHITE);</span>
+<span class="s3">//            artist_name.setTextColor(Color.DKGRAY);</span>
+<span class="s3">//        }</span>
+    <span class="s1">}</span>
+    <span class="s0">public void </span><span class="s1">ImageAnimation(Context context</span><span class="s0">, </span><span class="s1">ImageView imageView</span><span class="s0">, </span><span class="s1">Bitmap bitmap) {</span>
+        <span class="s1">Animation animOut = AnimationUtils.loadAnimation(context</span><span class="s0">, </span><span class="s1">android.R.anim.fade_out)</span><span class="s0">;</span>
+        <span class="s1">Animation animIn = AnimationUtils.loadAnimation(context</span><span class="s0">, </span><span class="s1">android.R.anim.fade_in)</span><span class="s0">;</span>
+        <span class="s1">animOut.setAnimationListener(</span><span class="s0">new </span><span class="s1">Animation.AnimationListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onAnimationStart(Animation animation) {</span>
+
+            <span class="s1">}</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onAnimationEnd(Animation animation) {</span>
+                <span class="s1">Glide.with(context).load(bitmap).into(imageView)</span><span class="s0">;</span>
+                <span class="s1">animIn.setAnimationListener(</span><span class="s0">new </span><span class="s1">Animation.AnimationListener() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onAnimationStart(Animation animation) {</span>
+
+                    <span class="s1">}</span>
+
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onAnimationEnd(Animation animation) {</span>
+
+                    <span class="s1">}</span>
+
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onAnimationRepeat(Animation animation) {</span>
+
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+                <span class="s1">imageView.startAnimation(animIn)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onAnimationRepeat(Animation animation) {</span>
+
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+        <span class="s1">imageView.startAnimation(animOut)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onCompletion(MediaPlayer mp) {</span>
+        <span class="s1">nextBtnClicked()</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">)</span>
+        <span class="s1">{</span>
+            <span class="s1">mediaPlayer = MediaPlayer.create(getApplicationContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+<span class="s3">//    @Override</span>
+<span class="s3">//    public void onServiceConnected(ComponentName name, IBinder service) {</span>
+<span class="s3">//        MusicService.MyBinder myBinder = (MusicService.MyBinder) service;</span>
+<span class="s3">//        musicService = myBinder.getService();</span>
+<span class="s3">//        Toast.makeText(this, &quot;Connected&quot; + musicService, Toast.LENGTH_SHORT).show();</span>
+<span class="s3">//        seekBar.setMax(musicService.getDuration() / 1000);</span>
+<span class="s3">//        metaData(uri);</span>
+<span class="s3">//        song_name.setText(listSongs.get(position).getTitle());</span>
+<span class="s3">//        artist_name.setText(listSongs.get(position).getArtist());</span>
+<span class="s3">//        musicService.onCompleted();</span>
+<span class="s3">//    }</span>
+<span class="s3">//</span>
+<span class="s3">//    @Override</span>
+<span class="s3">//    public void onServiceDisconnected(ComponentName name) {</span>
+<span class="s3">//        musicService = null;</span>
+<span class="s3">//    }</span>
+
+<span class="s3">//    void showNotification (int playPauseBtn) {</span>
+<span class="s3">//        Intent intent = new Intent(this, PlayerActivity.class);</span>
+<span class="s3">//        @SuppressLint(&quot;UnspecifiedImmutableFlag&quot;)</span>
+<span class="s3">//        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);</span>
+<span class="s3">//        Intent prevIntent = new Intent(this, NotificationReceiver.class)</span>
+<span class="s3">//                .setAction(ACTION_PREVIOUS);</span>
+<span class="s3">//        @SuppressLint(&quot;UnspecifiedImmutableFlag&quot;)</span>
+<span class="s3">//        PendingIntent prevPending = PendingIntent</span>
+<span class="s3">//                .getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);</span>
+<span class="s3">//        Intent pauseIntent = new Intent(this, NotificationReceiver.class)</span>
+<span class="s3">//                .setAction(ACTION_PLAY);</span>
+<span class="s3">//        @SuppressLint(&quot;UnspecifiedImmutableFlag&quot;)</span>
+<span class="s3">//        PendingIntent pausePending = PendingIntent</span>
+<span class="s3">//                .getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);</span>
+<span class="s3">//        Intent nextIntent = new Intent(this, NotificationReceiver.class)</span>
+<span class="s3">//                .setAction(ACTION_PREVIOUS);</span>
+<span class="s3">//        @SuppressLint(&quot;UnspecifiedImmutableFlag&quot;)</span>
+<span class="s3">//        PendingIntent nextPending = PendingIntent</span>
+<span class="s3">//                .getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);</span>
+<span class="s3">//        byte[] picture = null;</span>
+<span class="s3">//        picture = getAlbumArt(musicFiles.get(position).getPath());</span>
+<span class="s3">//        Bitmap thumb = null;</span>
+<span class="s3">//        if (picture != null) {</span>
+<span class="s3">//            thumb = BitmapFactory.decodeByteArray(picture, 0, picture.length);</span>
+<span class="s3">//        } else {</span>
+<span class="s3">//            thumb = BitmapFactory.decodeResource(getResources(), R.drawable.anh);</span>
+<span class="s3">//        }</span>
+<span class="s3">//        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID_2)</span>
+<span class="s3">//                .setSmallIcon(playPauseBtn)</span>
+<span class="s3">//                .setLargeIcon(thumb)</span>
+<span class="s3">//                .setContentTitle(musicFiles.get(position).getTitle())</span>
+<span class="s3">//                .setContentText(musicFiles.get(position).getArtist())</span>
+<span class="s3">//                .addAction(R.drawable.baseline_skip_previous_24, &quot;Previous&quot;, prevPending)</span>
+<span class="s3">//                .addAction(playPauseBtn, &quot;Pause&quot;, pausePending)</span>
+<span class="s3">//                .addAction(R.drawable.baseline_skip_next_24, &quot;Next&quot;, nextPending)</span>
+<span class="s3">//                .setStyle(new Notification.MediaStyle()</span>
+<span class="s3">//                        .setMediaSession(mediaSessionCompat.getSessionToken()))</span>
+<span class="s3">//                .setPriority(NotificationCompat.PRIORITY_HIGH)</span>
+<span class="s3">//                .setOnlyAlertOnce(true)</span>
+<span class="s3">//                .build();</span>
+<span class="s3">//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);</span>
+<span class="s3">//        notificationManager.notify(0, notification);</span>
+<span class="s3">//    }</span>
+
+    <span class="s0">private byte</span><span class="s1">[] getAlbumArt(String uri) {</span>
+        <span class="s1">MediaMetadataRetriever retriever = </span><span class="s0">new </span><span class="s1">MediaMetadataRetriever()</span><span class="s0">;</span>
+        <span class="s1">retriever.setDataSource(uri)</span><span class="s0">;</span>
+        <span class="s0">byte</span><span class="s1">[] art = retriever.getEmbeddedPicture()</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s1">art</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>

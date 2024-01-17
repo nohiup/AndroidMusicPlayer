@@ -1,0 +1,52 @@
+<html>
+<head>
+<title>ApplicationClass.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ApplicationClass.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.app.Application</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.NotificationChannel</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.NotificationManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Build</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">ApplicationClass </span><span class="s0">extends </span><span class="s1">Application {</span>
+    <span class="s0">public static final </span><span class="s1">String CHANNEL_ID_1 = </span><span class="s2">&quot;channel1&quot;</span><span class="s0">;</span>
+    <span class="s0">public static final </span><span class="s1">String CHANNEL_ID_2 = </span><span class="s2">&quot;channel2&quot;</span><span class="s0">;</span>
+    <span class="s0">public static final </span><span class="s1">String ACTION_PREVIOUS = </span><span class="s2">&quot;actionprevious&quot;</span><span class="s0">;</span>
+    <span class="s0">public static final </span><span class="s1">String ACTION_NEXT = </span><span class="s2">&quot;actionnext&quot;</span><span class="s0">;</span>
+    <span class="s0">public static final </span><span class="s1">String ACTION_PLAY = </span><span class="s2">&quot;actionplay&quot;</span><span class="s0">;</span>
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onCreate() {</span>
+        <span class="s0">super</span><span class="s1">.onCreate()</span><span class="s0">;</span>
+        <span class="s1">createNotificationChannel()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">private void </span><span class="s1">createNotificationChannel() {</span>
+        <span class="s0">if </span><span class="s1">(Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O)</span>
+        <span class="s1">{</span>
+            <span class="s1">NotificationChannel channel1 = </span><span class="s0">new </span><span class="s1">NotificationChannel(CHANNEL_ID_1</span><span class="s0">, </span><span class="s2">&quot;Channel(1)&quot;</span><span class="s0">, </span><span class="s1">NotificationManager.IMPORTANCE_HIGH)</span><span class="s0">;</span>
+            <span class="s1">channel1.setDescription(</span><span class="s2">&quot;Channel 1 Desc..&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+            <span class="s1">NotificationChannel channel2 = </span><span class="s0">new </span><span class="s1">NotificationChannel(CHANNEL_ID_2</span><span class="s0">, </span><span class="s2">&quot;Channel(2)&quot;</span><span class="s0">, </span><span class="s1">NotificationManager.IMPORTANCE_HIGH)</span><span class="s0">;</span>
+            <span class="s1">channel2.setDescription(</span><span class="s2">&quot;Channel 2 Desc..&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">NotificationManager notificationManager = getSystemService(NotificationManager.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">notificationManager.createNotificationChannel(channel1)</span><span class="s0">;</span>
+            <span class="s1">notificationManager.createNotificationChannel(channel2)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

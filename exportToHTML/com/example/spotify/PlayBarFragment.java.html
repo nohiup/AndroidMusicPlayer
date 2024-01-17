@@ -1,0 +1,110 @@
+<html>
+<head>
+<title>PlayBarFragment.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #629755; font-style: italic;}
+.s5 { color: #629755; font-weight: bold; font-style: italic;}
+.s6 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+PlayBarFragment.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.graphics.Bitmap</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.BitmapFactory</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.LayoutInflater</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.View</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.ViewGroup</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.ImageView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.TextView</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.fragment.app.Fragment</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.google.android.gms.tasks.OnSuccessListener</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.storage.FirebaseStorage</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.storage.StorageReference</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">PlayBarFragment </span><span class="s0">extends </span><span class="s1">Fragment </span><span class="s0">implements </span><span class="s1">FragmentCallback{</span>
+
+    <span class="s2">// TODO: Rename parameter arguments, choose names that match</span>
+    <span class="s2">// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER</span>
+    <span class="s0">private static final </span><span class="s1">String ARG_PARAM1 = </span><span class="s3">&quot;param1&quot;</span><span class="s0">;</span>
+    <span class="s0">private static final </span><span class="s1">String ARG_PARAM2 = </span><span class="s3">&quot;param2&quot;</span><span class="s0">;</span>
+
+    <span class="s2">// TODO: Rename and change types of parameters</span>
+    <span class="s0">private </span><span class="s1">String mParam1</span><span class="s0">;</span>
+    <span class="s1">ImageView img</span><span class="s0">;</span>
+    <span class="s1">TextView author</span><span class="s0">, </span><span class="s1">songName</span><span class="s0">;</span>
+
+    <span class="s1">FirebaseStorage storage = FirebaseStorage.getInstance()</span><span class="s0">;</span>
+    <span class="s1">StorageReference storageReference = storage.getReference()</span><span class="s0">;</span>
+
+    <span class="s0">public </span><span class="s1">PlayBarFragment() {</span>
+        <span class="s2">// Required empty public constructor</span>
+    <span class="s1">}</span>
+
+    <span class="s4">/**</span>
+     <span class="s4">* Use this factory method to create a new instance of</span>
+     <span class="s4">* this fragment using the provided parameters.</span>
+     <span class="s4">*</span>
+     <span class="s4">* </span><span class="s5">@param </span><span class="s4">param1 Parameter 1.</span>
+     <span class="s4">* </span><span class="s5">@return </span><span class="s4">A new instance of fragment PlayBarFragment.</span>
+     <span class="s4">*/</span>
+    <span class="s2">// TODO: Rename and change types and number of parameters</span>
+    <span class="s0">public static </span><span class="s1">PlayBarFragment newInstance(String param1) {</span>
+        <span class="s1">PlayBarFragment fragment = </span><span class="s0">new </span><span class="s1">PlayBarFragment()</span><span class="s0">;</span>
+        <span class="s1">Bundle args = </span><span class="s0">new </span><span class="s1">Bundle()</span><span class="s0">;</span>
+        <span class="s1">args.putString(ARG_PARAM1</span><span class="s0">, </span><span class="s1">param1)</span><span class="s0">;</span>
+        <span class="s1">fragment.setArguments(args)</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s1">fragment</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(getArguments() != </span><span class="s0">null</span><span class="s1">) {</span>
+            <span class="s1">mParam1 = getArguments().getString(ARG_PARAM1)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public </span><span class="s1">View onCreateView(LayoutInflater inflater</span><span class="s0">, </span><span class="s1">ViewGroup container</span><span class="s0">,</span>
+                             <span class="s1">Bundle savedInstanceState) {</span>
+        <span class="s1">View view = inflater.inflate(R.layout.fragment_play_bar</span><span class="s0">, </span><span class="s1">container</span><span class="s0">, false</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">img = (ImageView) view.findViewById(R.id.IvIconPlayBar)</span><span class="s0">;</span>
+        <span class="s1">songName = (TextView) view.findViewById(R.id.songInfoPlayBar)</span><span class="s0">;</span>
+
+        <span class="s0">return </span><span class="s1">view</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onMessageFromMainToFrag(String sender</span><span class="s0">, </span><span class="s1">MusicFiles musicFiles) {</span>
+        <span class="s1">songName.setText(musicFiles.getTitle())</span><span class="s0">;</span>
+
+        <span class="s0">final long </span><span class="s1">ONE_MEGABYTE = </span><span class="s6">1024</span><span class="s1">*</span><span class="s6">1024</span><span class="s0">;</span>
+        <span class="s1">storageReference.child(</span><span class="s3">&quot;Thumbnails/&quot; </span><span class="s1">+ musicFiles.getAlbum())</span>
+                <span class="s1">.getBytes(ONE_MEGABYTE).addOnSuccessListener(</span><span class="s0">new </span><span class="s1">OnSuccessListener&lt;</span><span class="s0">byte</span><span class="s1">[]&gt;() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onSuccess(</span><span class="s0">byte</span><span class="s1">[] bytes) {</span>
+                        <span class="s1">Bitmap bmp = BitmapFactory.decodeByteArray(bytes</span><span class="s0">, </span><span class="s6">0</span><span class="s0">, </span><span class="s1">bytes.length)</span><span class="s0">;</span>
+                        <span class="s1">img.setImageBitmap(bmp)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>

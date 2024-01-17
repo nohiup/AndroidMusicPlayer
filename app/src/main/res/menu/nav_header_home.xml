@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view"
+    android:theme="@style/Theme.NavigationDrawer"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/profile" android:icon="@drawable/profile" android:title="Profile" />
+        <item android:id="@+id/mode" android:icon="@drawable/night_mode" android:title="Night mode" />
+    </group>
+
+    <item
+        android:title="">
+        <menu>
+            <item
+                android:id="@+id/logout_home"
+                android:icon="@drawable/logout_logo"
+                android:title="Logout"/>
+        </menu>
+    </item>
+</menu>

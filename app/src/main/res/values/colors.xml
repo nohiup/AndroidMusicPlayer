@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dark_gray">#FF222222</color>
+    <color name="transparent_gray">#CC222222</color>
+    <color name="light_green">#FF99AA88</color>
+    <color name="dark_green">#FF9A9760</color>
+    <color name="light_blue">#FFAACCFF</color>
+    <color name="purple">#FF550088</color>
+    <color name="blue">#FF0055AA</color>
+    <color name="dark_blue">#DD000010</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="lavender">#FF8692f7</color>
+    <color name="lavender_200">#FF6488E5</color>
+    <color name="cream_200">#FFFFF9ED</color>
+    <color name="gray_200">#FFD1D1D6</color>
+    <color name="dark">#FF32325D</color>
+    <color name="blue_200">#FF477FFF</color>
+    <color name="blue_300">#FF39AFFD</color>
+    <color name="dark_200">#FF32325D</color>
+    <color name="pink_200">#FFE8A1FD</color>
+    <color name="pink_400">#FFB97BFC</color>
+    <color name="pink_898">#FFF89880</color>
+    <color name="transparent">#00000000</color>
+    <color name="black_300">#FF22254C</color>
+    <color name="cream">#FFFFFAF1</color>
+    <color name="rust">#FFB7410E</color>
+    <color name="pink_dead">#FFFFDEAD</color>
+
+</resources>

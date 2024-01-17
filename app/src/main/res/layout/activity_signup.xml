@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".LoginActivity"
+    android:background="@drawable/ic_launcher_background"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/signupUI_guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".2"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/signupUI_guideline_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="1"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/signup_guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".05"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/signup_guideline_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".15"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="SIGN UP"
+        android:textSize="50dp"
+        app:layout_constraintBottom_toTopOf="@id/signup_guideline_bottom"
+        app:layout_constraintTop_toBottomOf="@id/signup_guideline_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/white"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:fontFamily="@font/svn_aguda_black"
+        android:autoSizeTextType="uniform"/>
+
+    <LinearLayout
+        app:layout_constraintBottom_toTopOf="@id/signupUI_guideline_bottom"
+        app:layout_constraintTop_toBottomOf="@id/signupUI_guideline_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/login_ui"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/white_round_search_view"
+            android:elevation="10dp"
+            android:layout_gravity="center"
+            >
+            <TextView
+                android:layout_width="200dp"
+                android:layout_height="30dp"
+                android:text="Email:"
+                android:fontFamily="@font/svn_aguda_black"
+                android:autoSizeTextType="uniform"
+                android:gravity="bottom"
+                android:layout_gravity="center_horizontal"/>
+            <EditText
+                android:id="@+id/EtEmailLogin"
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:fontFamily="@font/svn_aguda_black"
+                android:autoSizeTextType="uniform"
+                android:singleLine="true"
+                android:typeface="monospace"
+                android:layout_gravity="center_horizontal|center_vertical" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/white_round_search_view"
+            android:elevation="10dp"
+            android:layout_gravity="center"
+            >
+            <TextView
+                android:layout_width="200dp"
+                android:layout_height="30dp"
+                android:text="Password:"
+                android:fontFamily="@font/svn_aguda_black"
+                android:autoSizeTextType="uniform"
+                android:gravity="bottom"
+                android:layout_gravity="center_horizontal"
+                />
+            <EditText
+                android:id="@+id/EtPwdRegister"
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:fontFamily="@font/svn_aguda_black"
+                android:autoSizeTextType="uniform"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:inputType="textPassword"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/white_round_search_view"
+            android:elevation="10dp"
+            android:layout_gravity="center">
+            <TextView
+                android:layout_width="200dp"
+                android:layout_height="30dp"
+                android:text="Retype:"
+                android:fontFamily="@font/svn_aguda_black"
+                android:autoSizeTextType="uniform"
+                android:gravity="bottom"
+                android:layout_gravity="center_horizontal" />
+            <EditText
+                android:id="@+id/EtPwdRegisterRetype"
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:fontFamily="@font/svn_aguda_black"
+                android:autoSizeTextType="uniform"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:inputType="textPassword"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSignUpActivity"
+            android:layout_width="250dp"
+            android:layout_height="60dp"
+            android:text="Sign up"
+            android:textColor="@color/white"
+            android:fontFamily="@font/svn_aguda_black"
+            android:autoSizeTextType="uniform"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/round_btn" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

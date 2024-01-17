@@ -1,0 +1,145 @@
+<html>
+<head>
+<title>MusicService.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+MusicService.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import static </span><span class="s1">com.example.spotify.PlayerActivity.listSongs</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.app.Service</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.MediaPlayer</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.net.Uri</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Binder</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.IBinder</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.util.Log</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.example.spotify.PlayerActivity</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.annotation.Nullable</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.security.Provider</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.ArrayList</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">MusicService </span><span class="s0">extends </span><span class="s1">Service </span><span class="s0">implements </span><span class="s1">MediaPlayer.OnCompletionListener {</span>
+
+    <span class="s1">IBinder mBinder = </span><span class="s0">new </span><span class="s1">MyBinder()</span><span class="s0">;</span>
+    <span class="s1">MediaPlayer mediaPlayer</span><span class="s0">;</span>
+    <span class="s1">ArrayList&lt;MusicFiles&gt; musicFiles = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+    <span class="s1">Uri uri</span><span class="s0">;</span>
+    <span class="s0">int </span><span class="s1">position = -</span><span class="s2">1</span><span class="s0">;</span>
+    <span class="s1">ActionPlaying actionPlaying</span><span class="s0">;</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onCreate() {</span>
+        <span class="s0">super</span><span class="s1">.onCreate()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Nullable</span>
+    <span class="s1">@Override</span>
+    <span class="s0">public </span><span class="s1">IBinder onBind(Intent intent) {</span>
+        <span class="s0">return </span><span class="s1">mBinder</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onCompletion(MediaPlayer mp) {</span>
+        <span class="s1">Toast.makeText(</span><span class="s0">this, </span><span class="s3">&quot;complete!&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+<span class="s4">//        Log.e(&quot;action: &quot;, actionPlaying.toString());</span>
+            <span class="s1">Toast.makeText(</span><span class="s0">this, </span><span class="s3">&quot;next btn&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+            <span class="s1">actionPlaying.nextBtnClicked()</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+                <span class="s1">createMediaPlayer(position)</span><span class="s0">;</span>
+                <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+                <span class="s1">onCompleted()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+
+        <span class="s4">//btn_nextClicked();</span>
+
+    <span class="s1">}</span>
+
+    <span class="s0">public class </span><span class="s1">MyBinder </span><span class="s0">extends </span><span class="s1">Binder {</span>
+        <span class="s1">MusicService getService() {</span>
+            <span class="s0">return </span><span class="s1">MusicService.</span><span class="s0">this;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public int </span><span class="s1">onStartCommand(Intent intent</span><span class="s0">, int </span><span class="s1">flags</span><span class="s0">, int </span><span class="s1">startId) {</span>
+        <span class="s0">int </span><span class="s1">myPosition = intent.getIntExtra(</span><span class="s3">&quot;servicePosition&quot;</span><span class="s0">, </span><span class="s1">-</span><span class="s2">1</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(myPosition != -</span><span class="s2">1</span><span class="s1">) {</span>
+            <span class="s1">playMedia(myPosition)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s1">START_STICKY</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">private void </span><span class="s1">playMedia(</span><span class="s0">int </span><span class="s1">StartPosition) {</span>
+        <span class="s1">musicFiles = listSongs</span><span class="s0">;</span>
+        <span class="s1">position = StartPosition</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(mediaPlayer != </span><span class="s0">null</span><span class="s1">) {</span>
+            <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(musicFiles != </span><span class="s0">null</span><span class="s1">) {</span>
+                <span class="s1">createMediaPlayer(position)</span><span class="s0">;</span>
+                <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+        <span class="s0">else</span>
+        <span class="s1">{</span>
+            <span class="s1">createMediaPlayer(position)</span><span class="s0">;</span>
+            <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s0">void </span><span class="s1">start() {</span>
+        <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">boolean </span><span class="s1">isPlaying() {</span>
+        <span class="s0">return </span><span class="s1">mediaPlayer.isPlaying()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">void </span><span class="s1">stop() {</span>
+        <span class="s1">mediaPlayer.stop()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">void </span><span class="s1">release() {</span>
+        <span class="s1">mediaPlayer.release()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">int </span><span class="s1">getDuration() {</span>
+        <span class="s0">return </span><span class="s1">mediaPlayer.getDuration()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">void </span><span class="s1">seekTo(</span><span class="s0">int </span><span class="s1">position) {</span>
+        <span class="s1">mediaPlayer.seekTo(position)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">int </span><span class="s1">getCurrentPosition() {</span>
+        <span class="s0">return </span><span class="s1">mediaPlayer.getCurrentPosition()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">void </span><span class="s1">createMediaPlayer(</span><span class="s0">int </span><span class="s1">positionInner) {</span>
+        <span class="s1">position = positionInner</span><span class="s0">;</span>
+        <span class="s1">uri = Uri.parse(musicFiles.get(position).getPath())</span><span class="s0">;</span>
+        <span class="s1">mediaPlayer = MediaPlayer.create(getBaseContext()</span><span class="s0">, </span><span class="s1">uri)</span><span class="s0">;</span>
+        <span class="s1">musicFiles.get(position).setDuration(String.valueOf(mediaPlayer.getDuration()))</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">void </span><span class="s1">pause() {</span>
+        <span class="s1">mediaPlayer.pause()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s0">void </span><span class="s1">onCompleted() {</span>
+        <span class="s1">mediaPlayer.setOnCompletionListener(</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

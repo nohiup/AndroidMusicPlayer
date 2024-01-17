@@ -1,0 +1,297 @@
+<html>
+<head>
+<title>MainActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #808080;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+MainActivity.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.annotation.NonNull</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.annotation.Nullable</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.appcompat.app.AppCompatActivity</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.core.app.ActivityCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.core.content.ContextCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.core.content.PackageManagerCompat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.fragment.app.Fragment</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.fragment.app.FragmentManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.fragment.app.FragmentPagerAdapter</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.fragment.app.FragmentTransaction</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.LinearLayoutManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.RecyclerView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.viewpager.widget.ViewPager</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.Manifest</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.annotation.SuppressLint</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Context</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.pm.PackageManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.database.Cursor</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.net.Uri</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Build</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.provider.MediaStore</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.util.Log</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.MenuItem</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.google.android.gms.tasks.OnFailureListener</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.gms.tasks.OnSuccessListener</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.material.bottomnavigation.BottomNavigationView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.material.navigation.NavigationBarView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.material.tabs.TabLayout</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.auth.FirebaseAuth</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.firestore.DocumentSnapshot</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.firestore.FirebaseFirestore</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.firestore.QuerySnapshot</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.util.ArrayList</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.List</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">MainActivity </span><span class="s0">extends </span><span class="s1">AppCompatActivity </span><span class="s0">implements </span><span class="s1">MainCallback{</span>
+    <span class="s0">static </span><span class="s1">ArrayList&lt;MusicFiles&gt; musicFiles</span><span class="s0">;</span>
+    <span class="s0">static boolean </span><span class="s1">shuffleBoolean = </span><span class="s0">false, </span><span class="s1">repeatBoolean = </span><span class="s0">false;</span>
+    <span class="s0">static boolean </span><span class="s1">isPlaying = </span><span class="s0">false;</span>
+    <span class="s1">BottomNavigationView bottomNavigationView</span><span class="s0">;</span>
+    <span class="s1">FragmentTransaction ft</span><span class="s0">;</span>
+    <span class="s1">HomeFragment homeFragment</span><span class="s0">;</span>
+    <span class="s1">SearchFragment searchFragment</span><span class="s0">;</span>
+    <span class="s1">PlaylistFragment playlistFragment</span><span class="s0">;</span>
+    <span class="s1">PlayBarFragment playBarFragment</span><span class="s0">;</span>
+    <span class="s1">FirebaseFirestore db = FirebaseFirestore.getInstance()</span><span class="s0">;</span>
+    <span class="s1">FirebaseAuth auth = FirebaseAuth.getInstance()</span><span class="s0">;</span>
+
+    <span class="s1">@SuppressLint(</span><span class="s2">&quot;MissingInflatedId&quot;</span><span class="s1">)</span>
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s1">setContentView(R.layout.activity_main)</span><span class="s0">;</span>
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">bottomNavigationView = (BottomNavigationView)findViewById(R.id.bottomNavigationView)</span><span class="s0">;</span>
+            <span class="s1">musicFiles = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+            <span class="s1">playBarFragment = playBarFragment.newInstance(</span><span class="s2">&quot;play-bar-fragment&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">homeFragment = homeFragment.newInstance(</span><span class="s2">&quot;home-fragment&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">searchFragment = searchFragment.newInstance(</span><span class="s2">&quot;search-fragment&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">playlistFragment = playlistFragment.newInstance(</span><span class="s2">&quot;playlist-fragment&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">db = FirebaseFirestore.getInstance()</span><span class="s0">;</span>
+
+            <span class="s1">db.collection(</span><span class="s2">&quot;Music&quot;</span><span class="s1">).get()</span>
+                    <span class="s1">.addOnSuccessListener(</span><span class="s0">new </span><span class="s1">OnSuccessListener&lt;QuerySnapshot&gt;() {</span>
+                        <span class="s1">@Override</span>
+                        <span class="s0">public void </span><span class="s1">onSuccess(QuerySnapshot queryDocumentSnapshots) {</span>
+                            <span class="s3">// after getting the data we are calling on success method</span>
+                            <span class="s3">// and inside this method we are checking if the received</span>
+                            <span class="s3">// query snapshot is empty or not.</span>
+                            <span class="s0">if </span><span class="s1">(!queryDocumentSnapshots.isEmpty()) {</span>
+                                <span class="s3">// if the snapshot is not empty we are</span>
+                                <span class="s3">// hiding our progress bar and adding</span>
+                                <span class="s3">// our data in a list.</span>
+                                <span class="s3">//                            loadingPB.setVisibility(View.GONE);</span>
+                                <span class="s1">List&lt;DocumentSnapshot&gt; list = queryDocumentSnapshots.getDocuments()</span><span class="s0">;</span>
+                                <span class="s0">for </span><span class="s1">(DocumentSnapshot d : list) {</span>
+                                    <span class="s3">// after getting this list we are passing</span>
+                                    <span class="s3">// that list to our object class.</span>
+
+                                    <span class="s3">//                                MusicFiles c = d.toObject(MusicFiles.class);</span>
+
+                                    <span class="s1">String title = d.getString(</span><span class="s2">&quot;name&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                                    <span class="s1">String artist = d.getString(</span><span class="s2">&quot;singer&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                                    <span class="s3">//                                String path = d.getString(&quot;source&quot;);</span>
+                                    <span class="s1">String album = d.getString(</span><span class="s2">&quot;thumbnailName&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                                    <span class="s1">String id = d.getString(</span><span class="s2">&quot;id&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                                    <span class="s1">String duration = </span><span class="s2">&quot;&quot;</span><span class="s0">;</span>
+                                    <span class="s1">String path = d.getString(</span><span class="s2">&quot;source&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+                                    <span class="s1">MusicFiles c = </span><span class="s0">new </span><span class="s1">MusicFiles(path</span><span class="s0">, </span><span class="s1">title</span><span class="s0">, </span><span class="s1">artist</span><span class="s0">, </span><span class="s1">album</span><span class="s0">, </span><span class="s1">duration</span><span class="s0">, </span><span class="s1">id)</span><span class="s0">;</span>
+                                    <span class="s3">//                                Log.e(&quot;Duration: &quot;, c.getDuration());</span>
+
+                                    <span class="s3">// and we will pass this object class</span>
+                                    <span class="s3">// inside our arraylist which we have</span>
+                                    <span class="s3">// created for recycler view.</span>
+                                    <span class="s1">musicFiles.add(c)</span><span class="s0">;</span>
+                                    <span class="s1">homeFragment.onMessageFromMainToFrag(</span><span class="s2">&quot;MAIN&quot;</span><span class="s0">, </span><span class="s1">c)</span><span class="s0">;</span>
+                                    <span class="s1">searchFragment.onMessageFromMainToFrag(</span><span class="s2">&quot;MAIN&quot;</span><span class="s0">, </span><span class="s1">c)</span><span class="s0">;</span>
+                                <span class="s1">}</span>
+                                <span class="s3">// after adding the data to recycler view.</span>
+                                <span class="s3">// we are calling recycler view notifyDataSetChanged</span>
+                                <span class="s3">// method to notify that data has been changed in recycler view.</span>
+                            <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                                <span class="s3">// if the snapshot is empty we are displaying a toast message.</span>
+                                <span class="s1">Toast.makeText(MainActivity.</span><span class="s0">this, </span><span class="s2">&quot;Empty&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+                            <span class="s1">}</span>
+                        <span class="s1">}</span>
+                    <span class="s1">}).addOnFailureListener(</span><span class="s0">new </span><span class="s1">OnFailureListener() {</span>
+                        <span class="s1">@Override</span>
+                        <span class="s0">public void </span><span class="s1">onFailure(@NonNull Exception e) {</span>
+                            <span class="s3">// if we do not get any data or any error we are displaying</span>
+                            <span class="s3">// a toast message that we do not get any data</span>
+                            <span class="s1">Toast.makeText(MainActivity.</span><span class="s0">this, </span><span class="s2">&quot;Fail&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+                        <span class="s1">}</span>
+                    <span class="s1">})</span><span class="s0">;</span>
+
+            <span class="s1">bottomNavigationView.setOnItemSelectedListener(</span><span class="s0">new </span><span class="s1">NavigationBarView.OnItemSelectedListener() {</span>
+                <span class="s1">@Override</span>
+                <span class="s0">public boolean </span><span class="s1">onNavigationItemSelected(@NonNull MenuItem item) {</span>
+                    <span class="s0">int </span><span class="s1">id = item.getItemId()</span><span class="s0">;</span>
+                    <span class="s0">if </span><span class="s1">(id == R.id.Home)</span>
+                    <span class="s1">{</span>
+                        <span class="s1">ft = getSupportFragmentManager().beginTransaction()</span><span class="s0">;</span>
+                        <span class="s1">ft.replace(R.id.mainFrameContainer</span><span class="s0">, </span><span class="s1">homeFragment)</span><span class="s0">;</span>
+                        <span class="s1">ft.commit()</span><span class="s0">;</span>
+                        <span class="s0">return true;</span>
+                    <span class="s1">}</span>
+                    <span class="s0">if </span><span class="s1">(id == R.id.Search)</span>
+                    <span class="s1">{</span>
+                        <span class="s1">ft = getSupportFragmentManager().beginTransaction()</span><span class="s0">;</span>
+                        <span class="s1">ft.replace(R.id.mainFrameContainer</span><span class="s0">, </span><span class="s1">searchFragment)</span><span class="s0">;</span>
+                        <span class="s1">ft.commit()</span><span class="s0">;</span>
+                        <span class="s0">return true;</span>
+                    <span class="s1">}</span>
+                    <span class="s0">if </span><span class="s1">(id == R.id.Playlist)</span>
+                    <span class="s1">{</span>
+                        <span class="s1">ft = getSupportFragmentManager().beginTransaction()</span><span class="s0">;</span>
+                        <span class="s1">ft.replace(R.id.mainFrameContainer</span><span class="s0">, </span><span class="s1">playlistFragment)</span><span class="s0">;</span>
+                        <span class="s1">ft.commit()</span><span class="s0">;</span>
+                        <span class="s0">return true;</span>
+                    <span class="s1">}</span>
+                    <span class="s0">return false;</span>
+                <span class="s1">}</span>
+            <span class="s1">})</span><span class="s0">;</span>
+
+            <span class="s1">ft = getSupportFragmentManager().beginTransaction()</span><span class="s0">;</span>
+            <span class="s1">ft.replace(R.id.mainFrameContainer</span><span class="s0">, </span><span class="s1">homeFragment)</span><span class="s0">;</span>
+            <span class="s1">ft.commit()</span><span class="s0">;</span>
+
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e)</span>
+        <span class="s1">{</span>
+            <span class="s1">Log.d(</span><span class="s2">&quot;myTag&quot;</span><span class="s0">, </span><span class="s1">e.toString())</span><span class="s0">;</span>
+            <span class="s1">Toast.makeText(MainActivity.</span><span class="s0">this, </span><span class="s1">e.toString()</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onResume()</span>
+    <span class="s1">{</span>
+        <span class="s0">super</span><span class="s1">.onResume()</span><span class="s0">;</span>
+
+        <span class="s1">Intent intent = </span><span class="s0">this</span><span class="s1">.getIntent()</span><span class="s0">;</span>
+        <span class="s0">int </span><span class="s1">position = intent.getIntExtra(</span><span class="s2">&quot;position&quot;</span><span class="s0">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s0">if </span><span class="s1">(position == -</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">{</span>
+            <span class="s0">return;</span>
+        <span class="s1">}</span>
+
+        <span class="s1">playBarFragment.onMessageFromMainToFrag(</span><span class="s2">&quot;main&quot;</span><span class="s0">, </span><span class="s1">musicFiles.get(position))</span><span class="s0">;</span>
+        <span class="s1">ft.replace(R.id.mainFramePlayBarContainer</span><span class="s0">, </span><span class="s1">playBarFragment)</span><span class="s0">;</span>
+        <span class="s1">ft.commit()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onMessageFromFragToMain(String sender</span><span class="s0">, </span><span class="s1">Bundle bundle)</span>
+    <span class="s1">{</span>
+        <span class="s0">if </span><span class="s1">(sender.equals(</span><span class="s2">&quot;HOME-FRAG&quot;</span><span class="s1">))</span>
+        <span class="s1">{</span>
+
+        <span class="s1">}</span>
+
+        <span class="s0">if </span><span class="s1">(sender.equals(</span><span class="s2">&quot;PLAYLIST-FRAG&quot;</span><span class="s1">))</span>
+        <span class="s1">{</span>
+
+        <span class="s1">}</span>
+
+        <span class="s0">if </span><span class="s1">(sender.equals(</span><span class="s2">&quot;SEARCH-FRAG&quot;</span><span class="s1">))</span>
+        <span class="s1">{</span>
+
+        <span class="s1">}</span>
+
+        <span class="s0">if </span><span class="s1">(sender.equals(</span><span class="s2">&quot;PLAY-BAR&quot;</span><span class="s1">))</span>
+        <span class="s1">{</span>
+
+        <span class="s1">}</span>
+
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+<span class="s3">//class musicData {</span>
+<span class="s3">//    static ArrayList&lt;MusicFiles&gt; musicFiles;</span>
+<span class="s3">//    static boolean shuffleBoolean = false, repeatBoolean = false;</span>
+<span class="s3">//    FragmentTransaction ft;</span>
+<span class="s3">//    HomeFragment homeFragment;</span>
+<span class="s3">//    RecyclerView recyclerView;</span>
+<span class="s3">//    MusicAdapter musicAdapter;</span>
+<span class="s3">//    FirebaseFirestore db = FirebaseFirestore.getInstance();</span>
+<span class="s3">//    public interface dataContact{</span>
+<span class="s3">//        public void getData(MusicFiles musicFiles);</span>
+<span class="s3">//    }</span>
+<span class="s3">//</span>
+<span class="s3">//    public void dataGetter(dataContact contact)</span>
+<span class="s3">//    {</span>
+<span class="s3">//</span>
+<span class="s3">//        db.collection(&quot;Music&quot;).get()</span>
+<span class="s3">//                .addOnSuccessListener(new OnSuccessListener&lt;QuerySnapshot&gt;() {</span>
+<span class="s3">//                    @Override</span>
+<span class="s3">//                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {</span>
+<span class="s3">//                        // after getting the data we are calling on success method</span>
+<span class="s3">//                        // and inside this method we are checking if the received</span>
+<span class="s3">//                        // query snapshot is empty or not.</span>
+<span class="s3">//                        if (!queryDocumentSnapshots.isEmpty()) {</span>
+<span class="s3">//                            // if the snapshot is not empty we are</span>
+<span class="s3">//                            // hiding our progress bar and adding</span>
+<span class="s3">//                            // our data in a list.</span>
+<span class="s3">//                            //                            loadingPB.setVisibility(View.GONE);</span>
+<span class="s3">//                            List&lt;DocumentSnapshot&gt; list = queryDocumentSnapshots.getDocuments();</span>
+<span class="s3">//                            for (DocumentSnapshot d : list) {</span>
+<span class="s3">//                                // after getting this list we are passing</span>
+<span class="s3">//                                // that list to our object class.</span>
+<span class="s3">//</span>
+<span class="s3">//                                //                                MusicFiles c = d.toObject(MusicFiles.class);</span>
+<span class="s3">//</span>
+<span class="s3">//                                String title = d.getString(&quot;name&quot;);</span>
+<span class="s3">//                                String artist = d.getString(&quot;singer&quot;);</span>
+<span class="s3">//                                //                                String path = d.getString(&quot;source&quot;);</span>
+<span class="s3">//                                String album = d.getString(&quot;thumbnailName&quot;);</span>
+<span class="s3">//                                String id = d.getString(&quot;id&quot;);</span>
+<span class="s3">//                                String duration = &quot;&quot;;</span>
+<span class="s3">//                                String path = d.getString(&quot;source&quot;);</span>
+<span class="s3">//</span>
+<span class="s3">//                                MusicFiles c = new MusicFiles(path, title, artist, album, duration, id);</span>
+<span class="s3">//                                //                                Log.e(&quot;Duration: &quot;, c.getDuration());</span>
+<span class="s3">//</span>
+<span class="s3">//                                // and we will pass this object class</span>
+<span class="s3">//                                // inside our arraylist which we have</span>
+<span class="s3">//                                // created for recycler view.</span>
+<span class="s3">//                                musicFiles.add(c);</span>
+<span class="s3">//</span>
+<span class="s3">//                                //                                Toast.makeText(MainActivity.this, &quot;Music name:&quot; + c.getTitle(), Toast.LENGTH_SHORT).show();</span>
+<span class="s3">//                            }</span>
+<span class="s3">//                            // after adding the data to recycler view.</span>
+<span class="s3">//                            // we are calling recycler view notifyDataSetChanged</span>
+<span class="s3">//                            // method to notify that data has been changed in recycler view.</span>
+<span class="s3">//                        } else {</span>
+<span class="s3">//                            // if the snapshot is empty we are displaying a toast message.</span>
+<span class="s3">//                        }</span>
+<span class="s3">//                    }</span>
+<span class="s3">//                }).addOnFailureListener(new OnFailureListener() {</span>
+<span class="s3">//                    @Override</span>
+<span class="s3">//                    public void onFailure(@NonNull Exception e) {</span>
+<span class="s3">//                        // if we do not get any data or any error we are displaying</span>
+<span class="s3">//                        // a toast message that we do not get any data</span>
+<span class="s3">//                    }</span>
+<span class="s3">//                });</span>
+<span class="s3">//    }</span>
+<span class="s3">//}</span>
+</pre>
+</body>
+</html>

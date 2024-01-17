@@ -1,0 +1,223 @@
+<html>
+<head>
+<title>MusicAdapterHorizontal.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+MusicAdapterHorizontal.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import static </span><span class="s1">android.app.ProgressDialog.show</span><span class="s0">;</span>
+<span class="s0">import static </span><span class="s1">com.example.spotify.R.id.delete</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.annotation.SuppressLint</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.ContentUris</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Context</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.Bitmap</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.BitmapFactory</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.MediaMetadataRetriever</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.net.Uri</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.provider.MediaStore</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.util.Log</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.LayoutInflater</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.MenuItem</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.View</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.ViewGroup</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Filterable</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.ImageView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.PopupMenu</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.TextView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.annotation.NonNull</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.fragment.app.Fragment</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.RecyclerView</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">com.bumptech.glide.Glide</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.gms.tasks.OnSuccessListener</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.android.material.snackbar.Snackbar</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.firestore.FirebaseFirestore</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.firestore.auth.User</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.storage.FirebaseStorage</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">com.google.firebase.storage.StorageReference</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.io.File</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.io.FileFilter</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.io.IOException</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.ArrayList</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.List</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">MusicAdapterHorizontal </span><span class="s0">extends </span><span class="s1">RecyclerView.Adapter&lt;MusicAdapterHorizontal.MyVieHolder&gt;</span><span class="s2">/* implements Filterable */</span><span class="s1">{</span>
+
+    <span class="s0">private </span><span class="s1">Context mContext</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">ArrayList&lt;MusicFiles&gt; mFiles</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">ArrayList&lt;MusicFiles&gt; mFilesNew</span><span class="s0">;</span>
+
+    <span class="s1">FirebaseStorage storage = FirebaseStorage.getInstance()</span><span class="s0">;</span>
+    <span class="s1">StorageReference storageReference = storage.getReference()</span><span class="s0">;</span>
+
+    <span class="s1">MusicAdapterHorizontal(Context mContext</span><span class="s0">, </span><span class="s1">ArrayList&lt;MusicFiles&gt; mFiles) {</span>
+        <span class="s0">this</span><span class="s1">.mFiles = mFiles</span><span class="s0">;</span>
+        <span class="s0">this</span><span class="s1">.mFilesNew = mFiles</span><span class="s0">;</span>
+        <span class="s0">this</span><span class="s1">.mContext = mContext</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@NonNull</span>
+    <span class="s1">@Override</span>
+    <span class="s0">public </span><span class="s1">MyVieHolder onCreateViewHolder(@NonNull ViewGroup parent</span><span class="s0">, int </span><span class="s1">viewType) {</span>
+        <span class="s1">View view = LayoutInflater.from(mContext).inflate(R.layout.music_items_horizontal</span><span class="s0">, </span><span class="s1">parent</span><span class="s0">, false</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s0">return new </span><span class="s1">MyVieHolder(view)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onBindViewHolder(@NonNull MyVieHolder holder</span><span class="s0">, </span><span class="s1">@SuppressLint(</span><span class="s3">&quot;RecyclerView&quot;</span><span class="s1">) </span><span class="s0">int </span><span class="s1">position) {</span>
+        <span class="s1">holder.file_name.setText(mFiles.get(position).getTitle())</span><span class="s0">;</span>
+        <span class="s1">holder.author.setText(mFiles.get(position).getArtist())</span><span class="s0">;</span>
+
+        <span class="s0">final long </span><span class="s1">ONE_MEGABYTE = </span><span class="s4">1024</span><span class="s1">*</span><span class="s4">1024</span><span class="s0">;</span>
+<span class="s2">//        Log.e(&quot;thumbnail&quot;, mFiles.get(position).getAlbum());</span>
+        <span class="s1">storageReference.child(</span><span class="s3">&quot;Thumbnails/&quot; </span><span class="s1">+ mFiles.get(position).getAlbum())</span>
+                <span class="s1">.getBytes(ONE_MEGABYTE).addOnSuccessListener(</span><span class="s0">new </span><span class="s1">OnSuccessListener&lt;</span><span class="s0">byte</span><span class="s1">[]&gt;() {</span>
+                    <span class="s1">@Override</span>
+                    <span class="s0">public void </span><span class="s1">onSuccess(</span><span class="s0">byte</span><span class="s1">[] bytes) {</span>
+                        <span class="s1">Bitmap bmp = BitmapFactory.decodeByteArray(bytes</span><span class="s0">, </span><span class="s4">0</span><span class="s0">, </span><span class="s1">bytes.length)</span><span class="s0">;</span>
+                        <span class="s1">holder.album_art.setImageBitmap(bmp)</span><span class="s0">;</span>
+                    <span class="s1">}</span>
+                <span class="s1">})</span><span class="s0">;</span>
+
+
+        <span class="s1">holder.itemView.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View v) {</span>
+                <span class="s0">int </span><span class="s1">position = -</span><span class="s4">1</span><span class="s0">;</span>
+                <span class="s1">position = mFilesNew.indexOf(mFiles.get(holder.getAdapterPosition()))</span><span class="s0">;</span>
+                <span class="s1">Intent intent = </span><span class="s0">new </span><span class="s1">Intent(mContext</span><span class="s0">, </span><span class="s1">PlayerActivity.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">intent.putExtra(</span><span class="s3">&quot;position&quot;</span><span class="s0">, </span><span class="s1">position)</span><span class="s0">;</span>
+                <span class="s1">mContext.startActivity(intent)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+<span class="s2">//        holder.menuMore.setOnClickListener(new View.OnClickListener() {</span>
+<span class="s2">//            @SuppressLint(&quot;NonConstantResourceId&quot;)</span>
+<span class="s2">//            @Override</span>
+<span class="s2">//            public void onClick(View v) {</span>
+<span class="s2">//                PopupMenu popupMenu = new PopupMenu(mContext, v);</span>
+<span class="s2">//                popupMenu.getMenuInflater().inflate(R.menu.popup, popupMenu.getMenu());</span>
+<span class="s2">//                popupMenu.show();</span>
+<span class="s2">//</span>
+<span class="s2">//            }</span>
+<span class="s2">//        });</span>
+    <span class="s1">}</span>
+
+    <span class="s0">private void </span><span class="s1">deleteFile(</span><span class="s0">int </span><span class="s1">position</span><span class="s0">, </span><span class="s1">View v) {</span>
+        <span class="s1">Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI</span><span class="s0">,</span>
+                <span class="s1">Long.parseLong(mFiles.get(position).getId()))</span><span class="s0">; </span><span class="s2">//content://</span>
+
+        <span class="s1">File file = </span><span class="s0">new </span><span class="s1">File(mFiles.get(position).getPath())</span><span class="s0">;</span>
+        <span class="s0">boolean </span><span class="s1">deleted = file.delete()</span><span class="s0">;</span>
+
+        <span class="s0">if </span><span class="s1">(deleted) {</span>
+            <span class="s1">mContext.getContentResolver().delete(contentUri</span><span class="s0">, null, null</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s1">mFiles.remove(position)</span><span class="s0">;</span>
+            <span class="s1">notifyItemRemoved(position)</span><span class="s0">;</span>
+            <span class="s1">notifyItemRangeChanged(position</span><span class="s0">, </span><span class="s1">mFiles.size())</span><span class="s0">;</span>
+            <span class="s1">Snackbar.make(v</span><span class="s0">, </span><span class="s3">&quot;File Deleted: &quot;</span><span class="s0">, </span><span class="s1">Snackbar.LENGTH_LONG).show()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">else</span>
+        <span class="s1">{</span>
+            <span class="s1">Snackbar.make(v</span><span class="s0">, </span><span class="s3">&quot;Can't delete File&quot;</span><span class="s0">, </span><span class="s1">Snackbar.LENGTH_LONG).show()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public int </span><span class="s1">getItemCount() {</span>
+        <span class="s0">return </span><span class="s1">mFiles.size()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public class </span><span class="s1">MyVieHolder </span><span class="s0">extends </span><span class="s1">RecyclerView.ViewHolder {</span>
+        <span class="s1">TextView file_name</span><span class="s0">, </span><span class="s1">author</span><span class="s0">;</span>
+        <span class="s1">ImageView album_art</span><span class="s0">, </span><span class="s1">menuMore</span><span class="s0">;</span>
+        <span class="s0">public </span><span class="s1">MyVieHolder(@NonNull View itemView) {</span>
+            <span class="s0">super</span><span class="s1">(itemView)</span><span class="s0">;</span>
+            <span class="s1">file_name = itemView.findViewById(R.id.TvName)</span><span class="s0">;</span>
+            <span class="s1">album_art = itemView.findViewById(R.id.IvIconView)</span><span class="s0">;</span>
+            <span class="s1">author = itemView.findViewById(R.id.TvAuthor)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s0">private byte</span><span class="s1">[] getAlbumArt(String uri) </span><span class="s0">throws </span><span class="s1">IOException {</span>
+        <span class="s1">MediaMetadataRetriever retriever = </span><span class="s0">new </span><span class="s1">MediaMetadataRetriever()</span><span class="s0">;</span>
+        <span class="s1">retriever.setDataSource(uri)</span><span class="s0">;</span>
+        <span class="s0">byte</span><span class="s1">[] art = retriever.getEmbeddedPicture()</span><span class="s0">;</span>
+        <span class="s1">retriever.release()</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s1">art</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public </span><span class="s1">android.widget.Filter getFilter() {</span>
+        <span class="s2">// TODO Auto-generated method stub</span>
+        <span class="s0">return new </span><span class="s1">android.widget.Filter() {</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">protected </span><span class="s1">FilterResults performFiltering(CharSequence constraint) {</span>
+                <span class="s2">// TODO Auto-generated method stub</span>
+                <span class="s1">String strSearch = constraint.toString()</span><span class="s0">;</span>
+                <span class="s0">if</span><span class="s1">(strSearch.isEmpty()){</span>
+                    <span class="s1">mFiles = mFilesNew</span><span class="s0">;</span>
+                <span class="s1">} </span><span class="s0">else</span><span class="s1">{</span>
+                    <span class="s1">List&lt;MusicFiles&gt; list = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+                    <span class="s0">for</span><span class="s1">(MusicFiles user:mFilesNew){</span>
+                        <span class="s1">String str = convert(user.getTitle())</span><span class="s0">;</span>
+                        <span class="s0">if</span><span class="s1">(str.toLowerCase().contains(strSearch.toLowerCase())){</span>
+                            <span class="s1">list.add(user)</span><span class="s0">;</span>
+                        <span class="s1">}</span>
+                    <span class="s1">}</span>
+                    <span class="s1">mFiles = (ArrayList&lt;MusicFiles&gt;) list</span><span class="s0">;</span>
+                <span class="s1">}</span>
+                <span class="s1">FilterResults filterResults = </span><span class="s0">new </span><span class="s1">FilterResults()</span><span class="s0">;</span>
+                <span class="s1">filterResults.values = mFiles</span><span class="s0">;</span>
+                <span class="s0">return </span><span class="s1">filterResults</span><span class="s0">;</span>
+            <span class="s1">}</span>
+
+            <span class="s1">@Override</span>
+            <span class="s0">protected void </span><span class="s1">publishResults(CharSequence constraint</span><span class="s0">, </span><span class="s1">FilterResults results) {</span>
+                <span class="s2">// TODO Auto-generated method stub</span>
+                <span class="s1">mFiles = (ArrayList&lt;MusicFiles&gt;) results.values</span><span class="s0">;</span>
+                <span class="s1">notifyDataSetChanged()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public static </span><span class="s1">String convert(String str) {</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ&quot;</span><span class="s0">, </span><span class="s3">&quot;a&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ&quot;</span><span class="s0">, </span><span class="s3">&quot;e&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;ì|í|ị|ỉ|ĩ&quot;</span><span class="s0">, </span><span class="s3">&quot;i&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ&quot;</span><span class="s0">, </span><span class="s3">&quot;o&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ&quot;</span><span class="s0">, </span><span class="s3">&quot;u&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;ỳ|ý|ỵ|ỷ|ỹ&quot;</span><span class="s0">, </span><span class="s3">&quot;y&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;đ&quot;</span><span class="s0">, </span><span class="s3">&quot;d&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ&quot;</span><span class="s0">, </span><span class="s3">&quot;A&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ&quot;</span><span class="s0">, </span><span class="s3">&quot;E&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;Ì|Í|Ị|Ỉ|Ĩ&quot;</span><span class="s0">, </span><span class="s3">&quot;I&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ&quot;</span><span class="s0">, </span><span class="s3">&quot;O&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ&quot;</span><span class="s0">, </span><span class="s3">&quot;U&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;Ỳ|Ý|Ỵ|Ỷ|Ỹ&quot;</span><span class="s0">, </span><span class="s3">&quot;Y&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">str = str.replaceAll(</span><span class="s3">&quot;Đ&quot;</span><span class="s0">, </span><span class="s3">&quot;D&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s1">str</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+
+</pre>
+</body>
+</html>

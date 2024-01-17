@@ -1,0 +1,523 @@
+package com.example.spotify;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.PackageManagerCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+import android.widget.TextView;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
+    static ArrayList<MusicFiles> musicFiles;
+    static boolean shuffleBoolean = false, repeatBoolean = false;
+    static boolean isPlaying = false;
+    boolean isDarkMode = true;
+    BottomNavigationView bottomNavigationView;
+    FirebaseUser thisUser = FirebaseAuth.getInstance().getCurrentUser();
+    ConstraintLayout mainAct;
+    FragmentTransaction ft;
+    HomeFragment homeFragment;
+    LinearLayout topNav;
+    SearchFragment searchFragment;
+    PlaylistFragment playlistFragment;
+    static ArrayList<MusicFiles> albums;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageReference = storage.getReference();
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+    DrawerLayout drawerLayout;
+    AlbumFragment albumFragment;
+
+    NavigationView navigationView;
+
+    FrameLayout frag_bottom_player;
+    public static final String MUSIC_FILE_LAST_PLAYED = "LAST_PLAYED";
+    public static final String MUSIC_FILE ="STORED_MUSIC";
+    public static boolean SHOW_MINI_PLAYER = false;
+    public static String PATH_TO_FRAG = null;
+    public static String ARTIST_TO_FRAG = null;
+    public static String SONG_TO_FRAG = null;
+    public static final String ARTIST_NAME = "ARTIST_NAME";
+    public static final String SONG_NAME = "SONG_NAME";
+
+    static String current_fragment = "home";
+
+    @SuppressLint("MissingInflatedId")
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        try {
+
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); //Ignore red line errors
+            setSupportActionBar(toolbar);
+            albumFragment = albumFragment.newInstance("album-Fragment");
+            drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
+            mainAct = findViewById(R.id.main_act);
+            topNav = findViewById(R.id.top_nav);
+            navigationView = findViewById(R.id.home_nav);
+            navigationView.setNavigationItemSelectedListener(this);
+            navigationView.bringToFront();
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav,
+                    R.string.close_nav);
+            drawerLayout.addDrawerListener(toggle);
+            toggle.syncState();
+
+            bottomNavigationView = (BottomNavigationView)findViewById(R.id.bottomNavigationView);
+            musicFiles = new ArrayList<>();
+            albums = new ArrayList<>();
+            homeFragment = homeFragment.newInstance("home-fragment", this);
+            searchFragment = searchFragment.newInstance("search-fragment");
+            playlistFragment = playlistFragment.newInstance("playlist-fragment");
+            ArrayList<String> duplicated = new ArrayList<>();
+            db = FirebaseFirestore.getInstance();
+
+
+            db.collection("Music").get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            // after getting the data we are calling on success method
+                            // and inside this method we are checking if the received
+                            // query snapshot is empty or not.
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                // if the snapshot is not empty we are
+                                // hiding our progress bar and adding
+                                // our data in a list.
+                                //                            loadingPB.setVisibility(View.GONE);
+                                List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+                                for (DocumentSnapshot d : list) {
+                                    // after getting this list we are passing
+                                    // that list to our object class.
+
+                                    //                                MusicFiles c = d.toObject(MusicFiles.class);
+
+                                    String title = d.getString("name");
+                                    String artist = d.getString("singer");
+                                    //                                String path = d.getString("source");
+                                    String album = d.getString("album");
+                                    String id = d.getString("id");
+                                    String duration = "";
+                                    String path = d.getString("source");
+                                    String genre = d.getString("genre");
+                                    String language = d.getString("language");
+                                    String releaseDate = d.getString("releaseDate");
+                                    String thumbnailName = d.getString("thumbnailName");
+
+                                    MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
+                                    //                                Log.e("Duration: ", c.getDuration());
+
+                                    // and we will pass this object class
+                                    // inside our arraylist which we have
+                                    // created for recycler view.
+                                    musicFiles.add(c);
+                                    homeFragment.onMessageFromMainToFrag("MAIN", c);
+                                    searchFragment.onMessageFromMainToFrag("MAIN", c);
+                                    if (!duplicated.contains(album)){
+                                        albums.add(c);
+                                        duplicated.add(album);
+                                        albumFragment.onMessageFromMainToFrag("MAIN", c);
+                                    }
+                                }
+                                // after adding the data to recycler view.
+                                // we are calling recycler view notifyDataSetChanged
+                                // method to notify that data has been changed in recycler view.
+                            } else {
+                                // if the snapshot is empty we are displaying a toast message.
+                                Toast.makeText(MainActivity.this, "Empty", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            // if we do not get any data or any error we are displaying
+                            // a toast message that we do not get any data
+                            Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                    int id = item.getItemId();
+
+                    if (id == R.id.Home)
+                    {
+                        ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.mainFrameContainer, homeFragment);
+                        ft.commit();
+
+                        current_fragment = "home";
+                        return true;
+                    }
+                    if (id == R.id.Search)
+                    {
+                        ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.mainFrameContainer, searchFragment);
+                        ft.commit();
+
+                        current_fragment = "search";
+                        return true;
+                    }
+                    if (id == R.id.Playlist)
+                    {
+                        ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.mainFrameContainer, albumFragment);
+                        ft.commit();
+
+                        current_fragment = "playlist";
+                        return true;
+                    }
+
+                    homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+                    return false;
+                }
+            });
+
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, homeFragment);
+            ft.commit();
+
+
+        } catch (Exception e)
+        {
+            Log.d("myTag", e.toString());
+            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        saveModeStateData(isDarkMode);
+
+        SharedPreferences preferences = getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE);
+        String path = preferences.getString(MUSIC_FILE, null);
+        String artist = preferences.getString(ARTIST_NAME, null);
+        String song_name = preferences.getString(SONG_NAME, null);
+        if (path != null) {
+            SHOW_MINI_PLAYER = true;
+            PATH_TO_FRAG = path;
+            ARTIST_TO_FRAG = artist;
+            SONG_TO_FRAG = song_name;
+
+        } else {
+            SHOW_MINI_PLAYER = false;
+            PATH_TO_FRAG = null;
+            ARTIST_TO_FRAG = null;
+            SONG_TO_FRAG = null;
+        }
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        setAvatar();
+        setUsername();
+        try
+        {
+            updateModeState();
+        }
+        catch (Exception e)
+        {
+            saveModeStateData(isDarkMode);
+            updateModeState();
+
+        }
+
+
+        if (current_fragment.equals("home"))
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, homeFragment);
+            ft.commit();
+
+            bottomNavigationView.setSelectedItemId(R.id.Home);
+            homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+
+            return;
+        }
+        if (current_fragment.equals("search"))
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, searchFragment);
+            ft.commit();
+
+            bottomNavigationView.setSelectedItemId(R.id.Search);
+
+            return;
+        }
+        if (current_fragment.equals("playlist"))
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, albumFragment);
+            ft.commit();
+
+            bottomNavigationView.setSelectedItemId(R.id.Playlist);
+
+            return;
+        }
+
+
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
+    public void onMessageFromFragToMain(String sender, String request)
+    {
+        if (sender.equals("HOME-FRAG") && request.equals("mode"))
+        {
+            homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+        }
+
+        if (sender.equals("SEARCH-FRAG") && request.equals("mode"))
+        {
+            searchFragment.onMessageFromMainToFrag("main", isDarkMode);
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.logout_home)
+        {
+            FirebaseAuth.getInstance().signOut();
+
+            GoogleSignIn.getClient(
+                    this,
+                    new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+            ).signOut();
+
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            MainActivity.this.startActivity(intent);
+            return true;
+        }
+
+
+        if (id == R.id.profile)
+        {
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            intent.putExtra("activity_profile", "main");
+            MainActivity.this.startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.mode)
+        {
+            isDarkMode = !isDarkMode;
+            item.setIcon(R.drawable.light_mode);
+            if (isDarkMode) {
+                item.setIcon(R.drawable.night_mode);
+            }
+
+            item.setTitle("Light mode");
+            if (isDarkMode)
+            {
+                item.setTitle("Night mode");
+            }
+
+            item.setChecked(false);
+
+            setMode();
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode()
+    {
+        mainAct.setBackgroundColor(getResources().getColor(R.color.cream_200));
+        bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        topNav.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        bottomNavigationView.setItemTextColor(getResources().getColorStateList(R.color.bottom_nav_color_light_mode));
+        bottomNavigationView.setItemIconTintList(getResources().getColorStateList(R.color.bottom_nav_color_light_mode));
+        navigationView.setBackgroundColor(getResources().getColor(R.color.cream_200));
+        navigationView.setItemTextColor(ColorStateList.valueOf(getResources().getColor(R.color.black_300)));
+        navigationView.setItemIconTintList(ColorStateList.valueOf(getResources().getColor(R.color.black_300)));
+        View headerView = navigationView.getHeaderView(0);
+
+        LinearLayout navView = headerView.findViewById(R.id.nav_player_view);
+        navView.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        TextView navTextView = headerView.findViewById(R.id.name_holder);
+
+        navTextView.setTextColor(getResources().getColor(R.color.cream_200));
+
+        if (current_fragment.equals("home"))
+            homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+        if (isDarkMode)
+        {
+            navigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            mainAct.setBackgroundColor(getResources().getColor(R.color.dark_gray));
+            bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            topNav.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            bottomNavigationView.setItemTextColor(getResources().getColorStateList(R.color.bottom_nav_color));
+            bottomNavigationView.setItemIconTintList(getResources().getColorStateList(R.color.bottom_nav_color));
+            navigationView.setItemTextColor(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+            navigationView.setItemIconTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+            navView.setBackgroundColor(getResources().getColor(R.color.dark_200));
+        }
+    }
+
+    private Bitmap getBitmap(int drawableRes) {
+        Drawable drawable = getResources().getDrawable(drawableRes);
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, 50,50);
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+    private void setUsername() {
+        Task<DocumentSnapshot> documentSnapshotTask = FirebaseFirestore.getInstance().collection("User")
+                .document(thisUser.getUid())
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        View headerView = navigationView.getHeaderView(0);
+                        TextView username = headerView.findViewById(R.id.name_holder);
+                        if (task.isSuccessful()){
+                            String name = task.getResult().get("name").toString();
+                            Log.d("Name", name);
+                            username.setText(name);
+                        }
+                    }
+                });
+    }
+
+    private void setAvatar() {
+        Task<DocumentSnapshot> doc = db.collection("User").document(thisUser.getUid()).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        Log.d("ava", "OnComplete");
+                        if (task.isSuccessful()) {
+                            View headerView = navigationView.getHeaderView(0);
+                            ImageView ava = headerView.findViewById(R.id.ava);
+                            Log.d("ava", "IsSuccess");
+                            if (task.getResult().get("avatarDir") == null) {
+                                Log.d("ava", "NotNull");
+                                Bitmap selectedImageBitmap = getBitmap(R.drawable.ava_1);
+                                ava.setImageBitmap(selectedImageBitmap);
+                            } else {
+                                String avatarDir = task.getResult().get("avatarDir").toString();
+                                final long ONE_MEGABYTE = 1024 * 1024;
+                                Log.d("ava", avatarDir);
+                                storageReference.child("Avatars").child(thisUser.getUid() + ".jpg")
+                                        .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                            @Override
+                                            public void onSuccess(byte[] bytes) {
+                                                Log.d("ava", avatarDir);
+                                                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                                ava.setImageBitmap(bmp);
+                                            }
+                                        });
+                            }
+                        }
+                    }
+                });
+    }
+}

@@ -1,0 +1,113 @@
+<html>
+<head>
+<title>HomeFragment.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+HomeFragment.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.spotify</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.LayoutInflater</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.View</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.ViewGroup</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Button</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.fragment.app.Fragment</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.fragment.app.FragmentTransaction</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.LinearLayoutManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">androidx.recyclerview.widget.RecyclerView</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.util.ArrayList</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">HomeFragment </span><span class="s0">extends </span><span class="s1">Fragment </span><span class="s0">implements </span><span class="s1">FragmentCallback{</span>
+
+    <span class="s2">// TODO: Rename parameter arguments, choose names that match</span>
+    <span class="s2">// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER</span>
+    <span class="s0">private static final </span><span class="s1">String ARG_PARAM1 = </span><span class="s3">&quot;param1&quot;</span><span class="s0">;</span>
+    <span class="s0">private static final </span><span class="s1">String ARG_PARAM2 = </span><span class="s3">&quot;param2&quot;</span><span class="s0">;</span>
+    <span class="s1">ArrayList&lt;MusicFiles&gt; musicFiles = </span><span class="s0">new </span><span class="s1">ArrayList&lt;&gt;()</span><span class="s0">;</span>
+    <span class="s1">MusicAdapter downloadSongAdapter</span><span class="s0">, </span><span class="s1">recentlyPlayedSongAdapter</span><span class="s0">,</span>
+            <span class="s1">popularSongAdapter</span><span class="s0">;</span>
+    <span class="s1">RecyclerView musicDownload</span><span class="s0">, </span><span class="s1">recentlyPlayed</span><span class="s0">,</span>
+            <span class="s1">popularSong</span><span class="s0">;</span>
+
+
+    <span class="s2">// TODO: Rename and change types of parameters</span>
+    <span class="s0">private </span><span class="s1">String mParam1</span><span class="s0">;</span>
+    <span class="s0">private </span><span class="s1">String mParam2</span><span class="s0">;</span>
+    <span class="s0">public </span><span class="s1">HomeFragment() {</span>
+        <span class="s2">// Required empty public constructor</span>
+    <span class="s1">}</span>
+    <span class="s0">public static </span><span class="s1">HomeFragment newInstance(String param1) {</span>
+        <span class="s1">HomeFragment fragment = </span><span class="s0">new </span><span class="s1">HomeFragment()</span><span class="s0">;</span>
+        <span class="s1">Bundle args = </span><span class="s0">new </span><span class="s1">Bundle()</span><span class="s0">;</span>
+        <span class="s1">args.putString(ARG_PARAM1</span><span class="s0">, </span><span class="s1">param1)</span><span class="s0">;</span>
+        <span class="s1">fragment.setArguments(args)</span><span class="s0">;</span>
+
+        <span class="s0">return </span><span class="s1">fragment</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(getArguments() != </span><span class="s0">null</span><span class="s1">) {</span>
+            <span class="s1">mParam1 = getArguments().getString(ARG_PARAM1)</span><span class="s0">;</span>
+            <span class="s1">mParam2 = getArguments().getString(ARG_PARAM2)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public </span><span class="s1">View onCreateView(LayoutInflater inflater</span><span class="s0">, </span><span class="s1">ViewGroup container</span><span class="s0">,</span>
+                             <span class="s1">Bundle savedInstanceState) {</span>
+        <span class="s1">View view = inflater.inflate(R.layout.fragment_home</span><span class="s0">, </span><span class="s1">container</span><span class="s0">, false</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">LinearLayoutManager recentlyPlayedLM = </span><span class="s0">new </span><span class="s1">LinearLayoutManager(</span><span class="s0">this</span><span class="s1">.getContext())</span><span class="s0">;</span>
+        <span class="s1">LinearLayoutManager musicDownloadLM = </span><span class="s0">new </span><span class="s1">LinearLayoutManager(</span><span class="s0">this</span><span class="s1">.getContext())</span><span class="s0">;</span>
+        <span class="s1">LinearLayoutManager popularSongLM = </span><span class="s0">new </span><span class="s1">LinearLayoutManager(</span><span class="s0">this</span><span class="s1">.getContext())</span><span class="s0">;</span>
+
+        <span class="s1">recentlyPlayedLM.setOrientation(LinearLayoutManager.HORIZONTAL)</span><span class="s0">;</span>
+        <span class="s1">musicDownloadLM.setOrientation(LinearLayoutManager.HORIZONTAL)</span><span class="s0">;</span>
+        <span class="s1">popularSongLM.setOrientation(LinearLayoutManager.HORIZONTAL)</span><span class="s0">;</span>
+
+        <span class="s1">popularSong = (RecyclerView) view.findViewById(R.id.popularSongList)</span><span class="s0">;</span>
+        <span class="s1">musicDownload = (RecyclerView) view.findViewById(R.id.downloadMusicList)</span><span class="s0">;</span>
+        <span class="s1">recentlyPlayed = (RecyclerView) view.findViewById(R.id.recentlyPlayed)</span><span class="s0">;</span>
+
+        <span class="s1">popularSongAdapter = </span><span class="s0">new </span><span class="s1">MusicAdapter(</span><span class="s0">this</span><span class="s1">.getContext()</span><span class="s0">, </span><span class="s1">musicFiles)</span><span class="s0">;</span>
+        <span class="s1">downloadSongAdapter = </span><span class="s0">new </span><span class="s1">MusicAdapter(</span><span class="s0">this</span><span class="s1">.getContext()</span><span class="s0">, </span><span class="s1">musicFiles)</span><span class="s0">;</span>
+        <span class="s1">recentlyPlayedSongAdapter = </span><span class="s0">new </span><span class="s1">MusicAdapter(</span><span class="s0">this</span><span class="s1">.getContext()</span><span class="s0">, </span><span class="s1">musicFiles)</span><span class="s0">;</span>
+
+        <span class="s1">recentlyPlayed.setLayoutManager(recentlyPlayedLM)</span><span class="s0">;</span>
+        <span class="s1">musicDownload.setLayoutManager(musicDownloadLM)</span><span class="s0">;</span>
+        <span class="s1">popularSong.setLayoutManager(popularSongLM)</span><span class="s0">;</span>
+
+        <span class="s1">recentlyPlayed.setAdapter(recentlyPlayedSongAdapter)</span><span class="s0">;</span>
+        <span class="s1">musicDownload.setAdapter(downloadSongAdapter)</span><span class="s0">;</span>
+        <span class="s1">popularSong.setAdapter(popularSongAdapter)</span><span class="s0">;</span>
+
+        <span class="s0">return </span><span class="s1">view</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onMessageFromMainToFrag(String sender</span><span class="s0">, </span><span class="s1">MusicFiles musicFiles) {</span>
+        <span class="s0">if </span><span class="s1">(sender.equals(</span><span class="s3">&quot;MAIN&quot;</span><span class="s1">)) {</span>
+            <span class="s0">this</span><span class="s1">.musicFiles.add(musicFiles)</span><span class="s0">;</span>
+            <span class="s1">recentlyPlayedSongAdapter.notifyDataSetChanged()</span><span class="s0">;</span>
+            <span class="s1">popularSongAdapter.notifyDataSetChanged()</span><span class="s0">;</span>
+            <span class="s1">downloadSongAdapter.notifyDataSetChanged()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>
