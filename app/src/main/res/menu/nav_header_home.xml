@@ -7,6 +7,8 @@
     <group android:checkableBehavior="single">
         <item android:id="@+id/profile" android:icon="@drawable/profile" android:title="Profile" />
         <item android:id="@+id/mode" android:icon="@drawable/night_mode" android:title="Night mode" />
+        <item android:id="@+id/leaderBoard" android:icon="@drawable/leader_board" android:title="Leader board"/>
+        <item android:id="@+id/myLibrary" android:title="My Library"/>
     </group>
 
     <item
