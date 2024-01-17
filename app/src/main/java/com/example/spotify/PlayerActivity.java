@@ -54,6 +54,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -63,6 +64,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.sql.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import android.support.v4.media.MediaMetadataCompat;
@@ -638,10 +640,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             final CollectionReference albumRef = FirebaseFirestore.getInstance().collection("Albums");
             final ArrayList<String>[] docList = new ArrayList[1];
 
-            albumRef.document(currentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            FirebaseFirestore.getInstance().collection("Albums").document(currentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if(task.isSuccessful()){
+                        Log.d("Error", "Reach");
                         //Document exists
                         if(task.getResult().exists()){
                             //Bai hat dang o tren man hinh
@@ -656,8 +659,14 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                             docList[0] = new ArrayList<String>();
                             docList[0].add(listSongs.get(position).getId());
                             Log.d("Position new", listSongs.get(position).getId());
-                            albumRef.document(currentId).update("songList", docList[0]);
+                            albumRef.document(currentId).set(new HashMap<String, Object>(){{
+                                put("id", currentId);
+                                put("songList", docList[0]);
+                            }});
                         }
+                    }
+                    else {
+                        Log.e("Error", task.getException().toString());
                     }
                 }
             });
