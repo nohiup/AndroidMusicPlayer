@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -41,6 +42,8 @@ public class LeaderboardFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private View view;
+
     private RecyclerView list;
     private MusicAdapterHorizontal adapter;
     private ArrayList<MusicFiles> musicList;
@@ -75,22 +78,6 @@ public class LeaderboardFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
-
-        musicList = new ArrayList<MusicFiles>();
-        adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
-        list = view.findViewById(R.id.recycler_leaderboard);
-        list.setAdapter(adapter);
-
-        indexSortList[0] = new ArrayList<HashMap<String, Object>>();
-        fetchDataFromFirestore();
-        return view;
-    }
-
     private void fetchDataFromFirestore(){
         FirebaseFirestore.getInstance().collection("Music").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -138,17 +125,42 @@ public class LeaderboardFragment extends Fragment {
                             .sorted(Comparator.comparingInt(m -> (int)m.get("like")))
                             .collect(Collectors.toList());
 
+                    int size = sortedList.size();
                     ArrayList<MusicFiles> finalMusicList = new ArrayList<MusicFiles>();
                     for (int i = sortedList.size()-1; i >=0; i--) {
                         finalMusicList.add(musicList.get((int) sortedList.get(i).get("index")));
-                        Log.d("Error check", finalMusicList.get(i).getTitle().toString());
+                        Log.d("Error check", finalMusicList.get(size-i-1).getTitle().toString());
                     }
 
                     musicList.clear();
                     musicList.addAll(finalMusicList);
-                    adapter.notifyDataSetChanged();
+                    Log.d("leaderboard", "onCreateView: " + musicList.size());
+//                    adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
+//                    list = view.findViewById(R.id.recycler_leaderboard);
+//                    list.setAdapter(adapter);
+//                    adapter.notifyDataSetChanged();
                 }
             }
+
         });
     }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
+
+        musicList = new ArrayList<MusicFiles>();
+        indexSortList[0] = new ArrayList<HashMap<String, Object>>();
+        fetchDataFromFirestore();
+        Log.d("leaderboard", "onCreateView: " + musicList.size());
+
+
+        adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
+        list = view.findViewById(R.id.recycler_leaderboard);
+        list.setAdapter(adapter);
+
+        return view;
+    }
+
+
 }
