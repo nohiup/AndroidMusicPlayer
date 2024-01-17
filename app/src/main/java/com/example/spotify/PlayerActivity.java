@@ -32,6 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -91,6 +92,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     FloatingActionButton playPauseBtn;
     Toolbar toolbar;
     DrawerLayout drawerLayout;
+    ScrollView lyricsScroll;
     SeekBar seekBar;
     int position = -1;
     static ArrayList<MusicFiles> listSongs = new ArrayList<>();
@@ -104,6 +106,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     MediaSessionCompat mediaSessionCompat;
     TextView lyrics;
     boolean isDarkMode = true;
+    int scrollX = 0;
+    int scrollY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +120,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         setSupportActionBar(toolbar);
 
         lyrics = findViewById(R.id.lyrics);
+        lyricsScroll = findViewById(R.id.lyricsScroll);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout_player);
         NavigationView navigationView = findViewById(R.id.nav_player_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -671,6 +676,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         if (id == R.id.mode)
         {
+            autoSlide();
             isDarkMode = !isDarkMode;
             item.setIcon(R.drawable.light_mode);
             if (isDarkMode) {
@@ -731,6 +737,30 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         } else {
             super.onBackPressed();
         }
+    }
+
+    public void autoSlide(){
+
+        scrollX = lyricsScroll.getScrollX();
+
+        final Handler handler = new Handler();
+        final Runnable runnable = new Runnable() {
+            int count = 0;
+            @Override
+            public void run() {
+                scrollY = lyricsScroll.getScrollY() + 1;
+
+                if (scrollY > lyricsScroll.getBottom())
+                {
+                    lyricsScroll.scrollTo(scrollX, lyricsScroll.getBottom());
+                    return;
+                }
+
+                lyricsScroll.scrollTo(scrollX, scrollY);
+                handler.postDelayed(this, 100);
+                }
+        };
+        handler.postDelayed(runnable, 100);
     }
 
     @Override
