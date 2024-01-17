@@ -108,7 +108,7 @@
                 android:padding="5dp">
 
                 <ImageView
-                    android:id="@+id/bottom_album_art"
+                    android:id="@+id/album_art_mini"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
                     android:scaleType="centerCrop"
@@ -140,7 +140,7 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="5dp"
                     android:layout_toStartOf="@id/play_pause_miniPlayer"
-                    android:layout_toEndOf="@id/bottom_album_art"
+                    android:layout_toEndOf="@id/album_art_mini"
                     android:maxLines="1"
                     android:text="Song Name Is Here"
                     android:textColor="#fff"
@@ -154,7 +154,7 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="5dp"
                     android:layout_toStartOf="@id/play_pause_miniPlayer"
-                    android:layout_toEndOf="@id/bottom_album_art"
+                    android:layout_toEndOf="@id/album_art_mini"
                     android:maxLines="1"
                     android:text="Song Artist Is Here"
                     android:textColor="#fff"
