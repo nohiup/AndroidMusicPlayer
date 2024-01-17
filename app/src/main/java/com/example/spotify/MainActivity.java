@@ -80,6 +80,8 @@ class ServiceMusic {
 
 public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
     static ArrayList<MusicFiles> musicFiles;
+    private MusicAdapterHorizontal supposedFavoriteAdapter;
+    private static ArrayList<MusicFiles> supposedFavoriteList;
     static boolean shuffleBoolean = false, repeatBoolean = false;
     static boolean isPlaying = false;
     boolean isDarkMode = true;
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     FragmentTransaction ft;
     HomeFragment homeFragment;
     LeaderboardFragment ldFragment;
+    MyLibraryFragment mlFragment;
     LinearLayout topNav;
     SearchFragment searchFragment;
     PlaylistFragment playlistFragment;
@@ -142,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             albumFragment = albumFragment.newInstance("album-Fragment");
             drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
             ldFragment = ldFragment.newInstance("ld-fragment", "test");
+            mlFragment = mlFragment.newInstance("ml-fragment", "test-2");
             mainAct = findViewById(R.id.main_act);
             topNav = findViewById(R.id.top_nav);
             navigationView = findViewById(R.id.home_nav);
@@ -490,6 +494,17 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             return true;
         }
 
+        if (id == R.id.myLibrary)
+        {
+
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, mlFragment);
+            ft.commit();
+            fetchDataForUserPlaylist();
+
+            return true;
+        }
+
         return false;
     }
 
@@ -706,5 +721,68 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             }
 
         });
+    }
+
+    private void fetchDataForUserPlaylist() {
+
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("Albums").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()){
+                            if (!task.getResult().exists()){
+                                //This user haven't add any file to playlist\
+                                //TODO: Add UI showing for this exception (anything)
+                            }
+                            else {
+                                //At least not null, but maybe empty
+                                ArrayList<String> musicIdList = (ArrayList<String>) task.getResult().get("songList");
+                                if (musicIdList.isEmpty()) {
+                                    //TODO: Show the same thing as above one
+                                }
+                                else {
+                                    for (String id : musicIdList) {
+                                        firestore.collection("Music").whereEqualTo("id", id).get().addOnCompleteListener(
+                                                new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if (task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot d: task.getResult()){
+                                                                String title = d.getString("name");
+                                                                String artist = d.getString("singer");
+                                                                //                                String path = d.getString("source");
+                                                                String album = d.getString("album");
+                                                                String id = d.getString("id");
+                                                                String duration = "";
+                                                                String path = d.getString("source");
+                                                                String genre = d.getString("genre");
+                                                                String language = d.getString("language");
+                                                                String releaseDate = d.getString("releaseDate");
+                                                                String thumbnailName = d.getString("thumbnailName");
+
+                                                                MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
+                                                                int counter = 0;
+                                                                ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
+                                                                if (likeShowingList == null || likeShowingList.isEmpty()){
+                                                                    counter = 0;
+                                                                }
+                                                                else{
+                                                                    counter = likeShowingList.size();
+                                                                }
+                                                                c.setLike(counter);
+                                                                mlFragment.onMessageFromMainToFrag("MAIN", c);
+                                                            }
+                                                        }
+                                                        //done here.
+                                                    }
+                                                });
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                });
     }
 }

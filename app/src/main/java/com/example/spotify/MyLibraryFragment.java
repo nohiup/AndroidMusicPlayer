@@ -1,28 +1,39 @@
 package com.example.spotify;
 
+import static com.example.spotify.MainActivity.musicFiles;
+
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link MyLibraryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MyLibraryFragment extends Fragment {
+
+public class MyLibraryFragment extends Fragment implements FragmentCallback {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static ArrayList<MusicFiles> supposedFavoriteList;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private RecyclerView list;
+    private LeaderBoardItem adapter;
+    private ArrayList<MusicFiles> musicList = new ArrayList<>();;
 
     public MyLibraryFragment() {
         // Required empty public constructor
@@ -60,7 +71,29 @@ public class MyLibraryFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_my_library, container, false);
+        LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
+
+        adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, true);
+        list = view.findViewById(R.id.recycler_leaderboard);
+        list.setLayoutManager(manager);
+        list.setAdapter(adapter);
         
         return view;
+    }
+
+    @Override
+    public void onMessageFromMainToFrag(String sender, MusicFiles musicFiles) {
+        musicList.add(musicFiles);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onMusicFromMainToFrag(String sender, MusicFiles musicFiles) {
+
+    }
+
+    @Override
+    public void onMessageFromMainToFrag(String sender, boolean isDarkMode) {
+
     }
 }
