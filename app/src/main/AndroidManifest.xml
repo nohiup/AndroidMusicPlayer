@@ -34,7 +34,9 @@
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".AlbumDetails"
+            android:exported="false" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
