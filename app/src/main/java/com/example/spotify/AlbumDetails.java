@@ -1,15 +1,22 @@
 package com.example.spotify;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import static com.example.spotify.MainActivity.musicFiles;
+import static com.example.spotify.MainActivity.shuffleBoolean;
 
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -34,13 +41,34 @@ public class AlbumDetails extends AppCompatActivity {
         albumPhoto = findViewById(R.id.albumPhoto);
         albumName = getIntent().getStringExtra("albumName");
 
-        int j = 0;
-        for(int i = 0; i < musicFiles.size();i++){
-            if(albumName.equals(musicFiles.get(i).getAlbum())){
-                albumSongs.add(j, musicFiles.get(i));
-                j++;
+        albumDetailsAdapter = new AlbumDetailsAdapter(this, albumSongs);
+        recyclerView.setAdapter(albumDetailsAdapter);
+
+        //Firestore album for all
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("Albums").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    albumSongs.clear();
+                    //Of course only 1 doc for favorite
+                    for (QueryDocumentSnapshot doc: task.getResult()){
+                        ArrayList<MusicFiles> showing = (ArrayList<MusicFiles>) doc.get("songList");
+                        albumSongs.addAll(showing);
+                    }
+                    //Fetch_ed albumSongs.
+                    albumDetailsAdapter.notifyDataSetChanged();
+                }
             }
-        }
+        });
+        //Dèaul
+//        int j = 0;
+//        for(int i = 0; i < musicFiles.size();i++){
+//            if(albumName.equals(musicFiles.get(i).getAlbum())){
+//                albumSongs.add(j, musicFiles.get(i));
+//                j++;
+//            }
+//        }
 //        try {
 //            byte[] image = getAlbumArt(albumSongs.get(0).getPath());
 //            if(image != null){
