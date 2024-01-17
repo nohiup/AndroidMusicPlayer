@@ -118,6 +118,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     boolean isDarkMode = true;
     int scrollX = 0;
     int scrollY = 0;
+    boolean autoScroll = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -833,6 +834,17 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             return true;
         }
 
+        if (id == R.id.autoScroll)
+        {
+            autoScroll = ! autoScroll;
+            item.setTitle("Auto Scroll on");
+            if (autoScroll)
+            {
+                autoSlide();
+                item.setTitle("Auto Scroll off");
+            }
+        }
+
         if  (id == R.id.addToPlaylist) {
             final String currentId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             final CollectionReference albumRef = FirebaseFirestore.getInstance().collection("Albums");
@@ -890,6 +902,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             @Override
             public void run() {
                 scrollY = lyricsScroll.getScrollY() + 1;
+                if (!autoScroll)
+                {
+                    return;
+                }
 
                 if (scrollY > lyricsScroll.getBottom())
                 {

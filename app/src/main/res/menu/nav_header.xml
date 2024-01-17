@@ -9,6 +9,7 @@
         <item android:id="@+id/mode" android:icon="@drawable/night_mode" android:title="Night mode" />
         <item android:id="@+id/download" android:icon="@drawable/download_logo" android:title="Download" />
         <item android:id="@+id/addToPlaylist" android:icon="@drawable/add_playlist" android:title="Add to playlist" />
+        <item android:id="@+id/autoScroll" android:icon="@drawable/song_lyrics" android:title="Auto Scroll on"/>
         <item android:id="@+id/like" android:icon="@drawable/like" android:title="Like song" />
     </group>
 

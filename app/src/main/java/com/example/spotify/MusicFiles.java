@@ -13,6 +13,8 @@ public class MusicFiles {
     String genre;
     String thumbnailName;
 
+    int like;
+
     public MusicFiles(String path, String title, String artist, String album, String duration, String id) {
         this.path = path;
         this.title = title;
@@ -35,6 +37,10 @@ public class MusicFiles {
         this.releaseDate = releaseDate;
         this.thumbnailName = thumbnailName;
         this.realID = realID;
+    }
+
+    public void setLike(int like) {
+        this.like = like;
     }
 
     public MusicFiles() {
