@@ -1,5 +1,6 @@
 package com.example.spotify;
 
+import static com.example.spotify.AlbumDetailsAdapter.albumFiles;
 import static com.example.spotify.ApplicationClass.ACTION_PLAY;
 import static com.example.spotify.ApplicationClass.ACTION_PREVIOUS;
 import static com.example.spotify.ApplicationClass.CHANNEL_ID_2;
@@ -14,6 +15,7 @@ import static com.example.spotify.ServiceMusic.musicService;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -27,7 +29,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -531,8 +535,18 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     }
     private void getIntentMethod() {
         position = getIntent().getIntExtra("position", -1);
+
         currentPosition = getIntent().getIntExtra("currentPositionFromMain", 0);
         listSongs = musicFiles;
+
+        String sender = getIntent().getStringExtra("sender");
+        if (sender!=null && sender.equals("albumDetails"))
+        {
+            listSongs = albumFiles;
+        } else{
+            listSongs = musicFiles  ;
+        }
+
         Log.e("Size: ", String.valueOf(musicFiles.size()));
         if (listSongs != null)
         {
@@ -675,12 +689,80 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         }
 
     }
+    //all method support showing notification and progress bar
+    final private String CHANNEL_ID = "1";
+    private void downloadProcessing(StorageReference reference, File file){
+        notificationProgressBarInit();
+        reference.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                //success
+                Log.d("SuccessNotif", file.toString());
+                notificationFinishInit();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("Download Error", e.toString());
+            }
+        });
+    }
 
+
+    private void notificationProgressBarInit() {
+        createNotificationChannel();
+        int id = 1;
+        Log.w("Method check", "reach here");
+        NotificationManager mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
+
+        mBuilder.setChannelId(CHANNEL_ID);
+        mBuilder.setSmallIcon(R.drawable.ic_launcher_foreground);
+        mBuilder.setContentTitle("My app") ;
+        mBuilder.setContentText("Download in progress");
+        mBuilder.setSmallIcon(R.drawable.ic_launcher_foreground);
+        mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        mBuilder.setAutoCancel(true);
+        mBuilder.setProgress(0, 100, true);
+
+        // Issues the notification
+        mNotifyManager.notify(id, mBuilder.build());
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is not in the Support Library.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this.
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+    private void notificationFinishInit(){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
+
+        builder.setContentTitle("My app").setContentText("Finished");
+        builder.setSmallIcon(R.drawable.ic_launcher_background);
+        notificationManager.notify(1, builder.build());
+    }
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
+        MusicFiles playing  = listSongs.get(position);
         String songID = listSongs.get(position).getId();
+
+        if (id == R.id.download){
+            StorageReference fileRef =  FirebaseStorage.getInstance().getReferenceFromUrl(playing.getPath());
+            File localFile = new File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), songID + ".mp3");
+            downloadProcessing(fileRef, localFile);
+        }
 
         if (id == R.id.like){
             FirebaseFirestore.getInstance().collection("Music").whereEqualTo("id", songID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
