@@ -673,7 +673,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         }
         return false;
     }
-
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {

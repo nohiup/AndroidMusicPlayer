@@ -2,6 +2,7 @@ package com.example.spotify;
 
 import static com.example.spotify.MainActivity.musicFiles;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -51,6 +52,7 @@ public class AlbumFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
 
 //        db.collection("Album").get()
 //                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
