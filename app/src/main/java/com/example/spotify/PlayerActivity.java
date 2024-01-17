@@ -64,6 +64,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.sql.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import android.support.v4.media.MediaMetadataCompat;
@@ -658,7 +659,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                             docList[0] = new ArrayList<String>();
                             docList[0].add(listSongs.get(position).getId());
                             Log.d("Position new", listSongs.get(position).getId());
-                            albumRef.document(currentId).set("songList", docList[0]);
+                            albumRef.document(currentId).set(new HashMap<String, Object>(){{
+                                put("id", currentId);
+                                put("songList", docList[0]);
+                            }});
                         }
                     }
                     else {
