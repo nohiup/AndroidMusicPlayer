@@ -24,6 +24,8 @@ import androidx.viewpager.widget.ViewPager;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -51,6 +53,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.TextView;
 
+import com.example.spotify.All_Service.AlarmReceiver;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -73,7 +76,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        dailyNotificationSet();
         try {
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); //Ignore red line errors
@@ -915,5 +921,25 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                         }
                     }
                 });
+    }
+
+    private void dailyNotificationSet(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 43);
+        calendar.set(Calendar.SECOND, 0);
+        if (calendar.getTime().compareTo(new Date()) < 0){
+            calendar.add(Calendar.MINUTE, 2);
+            Log.d("cal", "Passed time");
+
+        }
+
+        Log.d("cal" , "Show notif");
+        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 5*60, pendingIntent);
+        }
     }
 }

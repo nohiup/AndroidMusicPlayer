@@ -103,6 +103,8 @@
                 <action android:name="actionplay" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".All_Service.AlarmReceiver"/>
+        <activity android:name=".All_Service.NotificationActivity"/>
     </application>
 
 </manifest>
