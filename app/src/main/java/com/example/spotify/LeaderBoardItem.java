@@ -59,7 +59,7 @@ public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieH
         if (isDarkMode)
             view = LayoutInflater.from(mContext).inflate(R.layout.leader_board_item, parent, false);
         else
-            view = LayoutInflater.from(mContext).inflate(R.layout.leader_board_item, parent, false);
+            view = LayoutInflater.from(mContext).inflate(R.layout.leader_board_item_light_mode, parent, false);
         return new MyVieHolder(view);
     }
 

@@ -3,7 +3,9 @@ package com.example.spotify;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -22,13 +24,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-public class ResetPasswordActivity extends AppCompatActivity {
+public class ResetPasswordActivity extends AppCompatActivity implements savedState{
 
     private Button sendCode, confirm;
     private EditText email;
     private FirebaseAuth firebaseAuth;
 
-
+    private boolean isDarkMode = true;
     private int counter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +122,39 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 });
     }
 
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode(){
+        findViewById(R.id.passwordAct).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+
+        if (isDarkMode)
+        {
+            findViewById(R.id.passwordAct).setBackgroundColor(getResources().getColor(R.color.dark_200));
+
+        }
+    }
+
     private void setView()
     {
         sendCode = findViewById(R.id.btnSendCode);
@@ -155,6 +190,8 @@ class AvailableEmailFlag {
                     }
                 });
     }
+
+
 }
 
 

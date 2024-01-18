@@ -9,7 +9,7 @@
 
     <TextView
         android:layout_width="40dp"
-        android:textColor="@color/cream"
+        android:textColor="@color/dark_200"
         android:layout_height="match_parent"
         android:id="@+id/ranking"
         android:fontFamily="@font/svn_aguda_black"
@@ -51,7 +51,7 @@
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:singleLine="true"
-            android:textColor="@color/white"
+            android:textColor="@color/dark_200"
             android:textStyle="bold"
             android:layout_margin="5dp"
             android:fontFamily="@font/svn_aguda_black"/>
@@ -63,7 +63,7 @@
             android:autoSizeTextType="uniform"
             android:singleLine="true"
             android:layout_weight="1"
-            android:textColor="@color/white"
+            android:textColor="@color/dark_200"
             android:layout_margin="5dp"
             android:fontFamily="@font/svn_aguda_black"/>
 
@@ -74,7 +74,7 @@
             android:autoSizeTextType="uniform"
             android:singleLine="true"
             android:layout_weight="1"
-            android:textColor="@color/white"
+            android:textColor="@color/dark_200"
             android:layout_margin="5dp"
             android:fontFamily="@font/svn_aguda_black"/>
 

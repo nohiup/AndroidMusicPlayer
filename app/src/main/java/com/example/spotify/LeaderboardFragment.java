@@ -2,6 +2,7 @@ package com.example.spotify;
 
 import static com.example.spotify.MainActivity.musicFiles;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -43,10 +45,13 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    MainActivity main;
 
     private View view;
 
     private RecyclerView list;
+
+    boolean isDarkMode = true;
     private LeaderBoardItem adapter;
     private ArrayList<MusicFiles> musicList;
     private final ArrayList<HashMap<String, Object>> indexSortList[] = new ArrayList[1];
@@ -69,6 +74,7 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -79,6 +85,7 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        main = (MainActivity) getActivity();
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -90,10 +97,13 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
         Log.d("leaderboard", "onCreateView: " + musicList.size());
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
 
+
         adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, true);
         list = view.findViewById(R.id.recycler_leaderboard);
         list.setLayoutManager(manager);
         list.setAdapter(adapter);
+
+        main.onMessageFromFragToMain("leaderBoard", "mode");
 
         return view;
     }
@@ -113,6 +123,25 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
 
     @Override
     public void onMessageFromMainToFrag(String sender, boolean isDarkMode) {
+        if (list == null)
+        {
+            return;
+        }
+        this.isDarkMode = isDarkMode;
 
+        LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
+
+        adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, isDarkMode);
+        list.setLayoutManager(manager);
+        list.setAdapter(adapter);
+
+        TextView tv = view.findViewById(R.id.leaderBoardText);
+
+        tv.setTextColor(getResources().getColor(R.color.dark_200));
+
+        if (isDarkMode)
+        {
+            tv.setTextColor(getResources().getColor(R.color.cream_200));
+        }
     }
 }
