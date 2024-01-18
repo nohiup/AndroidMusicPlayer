@@ -142,7 +142,9 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         dailyNotificationSet();
+
         try {
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); //Ignore red line errors
@@ -926,7 +928,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     private void dailyNotificationSet(){
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 12);
-        calendar.set(Calendar.MINUTE, 43);
+        calendar.set(Calendar.MINUTE, 50);
         calendar.set(Calendar.SECOND, 0);
         if (calendar.getTime().compareTo(new Date()) < 0){
             calendar.add(Calendar.MINUTE, 2);
@@ -939,7 +941,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         if (alarmManager != null) {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 5*60, pendingIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES/15, pendingIntent);
         }
     }
 }
