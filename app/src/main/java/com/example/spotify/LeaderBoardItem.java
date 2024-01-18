@@ -1,6 +1,7 @@
 package com.example.spotify;
 
 import static com.example.spotify.MainActivity.musicFiles;
+import static com.example.spotify.ServiceMusic.*;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

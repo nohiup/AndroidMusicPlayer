@@ -1,7 +1,5 @@
 package com.example.spotify;
 
-import static com.example.spotify.MainActivity.musicFiles;
-
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
@@ -40,7 +38,7 @@ public class DownloadedFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    downloadedAdapter adapter;
+    DownloadedAdapter adapter;
 
     RecyclerView list;
 
@@ -84,7 +82,7 @@ public class DownloadedFragment extends Fragment {
 
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
 
-        adapter = new downloadedAdapter(getContext(), nameList, authorList, fileNames, true);
+        adapter = new DownloadedAdapter(getContext(), nameList, authorList, fileNames, true);
         list = view.findViewById(R.id.recycler_leaderboard);
         list.setLayoutManager(manager);
         list.setAdapter(adapter);

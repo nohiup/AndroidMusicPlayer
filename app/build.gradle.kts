@@ -60,4 +60,6 @@ dependencies {
 
     implementation ("com.facebook.android:facebook-android-sdk:[4,5)")
     implementation ("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.recyclerview:recyclerview:1.1.0")
+    implementation("androidx.cardview:cardview:1.0.0")
 }

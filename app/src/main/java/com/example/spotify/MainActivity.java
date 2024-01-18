@@ -34,6 +34,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -81,7 +83,10 @@ class ServiceMusic {
 }
 
 public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
-    static ArrayList<MusicFiles> musicFiles;
+    static public ArrayList<MusicFiles> musicFiles;
+    static String currentPlaylist;
+
+    ArrayList<MusicFiles> mainMs;
     public static ArrayList<MusicFiles> supposedFavoriteList;
     static boolean shuffleBoolean = false, repeatBoolean = false;
     static boolean isPlaying = false;
@@ -117,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public static String SONG_TO_FRAG = null;
     public static final String ARTIST_NAME = "ARTIST_NAME";
     public static final String SONG_NAME = "SONG_NAME";
-    public static ImageView nextBtnMini, albumArtMini;
+    public static ImageView nextBtnMini, albumArtMini, preBtnMini;
     public static TextView artistMini, songNameMini;
     public static FloatingActionButton playPauseBtnMini;
     FrameLayout miniPlayer;
@@ -143,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             albumArtMini = findViewById(R.id.album_art_mini);
             nextBtnMini = findViewById(R.id.skip_next_bottom);
             playPauseBtnMini = findViewById(R.id.play_pause_miniPlayer);
+            preBtnMini = findViewById(R.id.skip_previous_bottom);
 
             downloadedFragment = downloadedFragment.newInstance("ld-fragment", "test");
             albumFragment = albumFragment.newInstance("album-Fragment");
@@ -173,7 +179,13 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             songNameMini.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    if (songNameMini.getText().toString().equals("Chưa chọn bài hát"))
+                    {
+                        return;
+                    }
                     int position = musicService.position;
+
                     Intent intent = new Intent(v.getContext(), PlayerActivity.class);
                     intent.putExtra("position", position);
                     intent.putExtra("currentPositionFromMain", musicService.getCurrentPosition());
@@ -185,6 +197,9 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                 int position = musicService.position;
                 artistMini.setText(musicService.musicFiles.get(position).getArtist());
                 songNameMini.setText(musicService.musicFiles.get(position).getTitle());
+                playPauseBtnMini.setEnabled(true);
+                nextBtnMini.setEnabled(true);
+                preBtnMini.setEnabled(true);
                 if (musicService.isPlaying()) {
                     playPauseBtnMini.setImageResource(R.drawable.baseline_pause_24);
 //                    Toast.makeText(this, "pause mini", Toast.LENGTH_SHORT).show();
@@ -213,11 +228,21 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                     }
                 });
 
+                preBtnMini.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent serviceIntent = new Intent(v.getContext(), MusicService.class);
+                        serviceIntent.putExtra("ActionName", "previous");
+                        v.getContext().startService(serviceIntent);
+                    }
+                });
+
             } else {
                 artistMini.setText("Chưa chọn bài hát");
                 songNameMini.setText("Chưa chọn bài hát");
                 playPauseBtnMini.setEnabled(false);
                 nextBtnMini.setEnabled(false);
+                preBtnMini.setEnabled(false);
             }
 
             bottomNavigationView = (BottomNavigationView)findViewById(R.id.bottomNavigationView);
@@ -298,6 +323,19 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                     int id = item.getItemId();
 
+                    ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+                    NetworkInfo nInfo = cm.getActiveNetworkInfo();
+                    boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+                    if (!connected)
+                    {
+                        ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.mainFrameContainer, downloadedFragment);
+                        ft.commit();
+
+                        return true;
+                    }
+
                     if (id == R.id.Home)
                     {
                         ft = getSupportFragmentManager().beginTransaction();
@@ -371,6 +409,28 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public void onStart()
     {
         super.onStart();
+        boolean connectivity = getIntent().getBooleanExtra("connectivity", true);
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connectivity && connected)
+        {
+            startActivity(new Intent(this, LoginActivity.class));
+
+            return;
+        }
+
+        if (!connectivity)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            return;
+        }
+
         setAvatar();
         setUsername();
         try
@@ -457,6 +517,19 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connected)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            return true;
+        }
 
         if (id == R.id.logout_home)
         {
@@ -696,7 +769,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
 
         final long ONE_MEGABYTE = 1024*1024;
 //        Log.e("thumbnail", mFiles.get(position).getAlbum());
-        storageReference.child("Thumbnails/" + musicFiles.get(position).getthumbnailName())
+        storageReference.child("Thumbnails/" + musicService.musicFiles.get(position).getthumbnailName())
                 .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     @Override
                     public void onSuccess(byte[] bytes) {
