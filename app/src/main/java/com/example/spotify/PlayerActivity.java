@@ -4,6 +4,7 @@ import static com.example.spotify.AlbumDetailsAdapter.albumFiles;
 import static com.example.spotify.ApplicationClass.ACTION_PLAY;
 import static com.example.spotify.ApplicationClass.ACTION_PREVIOUS;
 import static com.example.spotify.ApplicationClass.CHANNEL_ID_2;
+import static com.example.spotify.LeaderboardFragment.musicListLeader;
 import static com.example.spotify.MainActivity.albumArtMini;
 import static com.example.spotify.MainActivity.artistMini;
 import static com.example.spotify.MainActivity.musicFiles;
@@ -12,6 +13,7 @@ import static com.example.spotify.MainActivity.repeatBoolean;
 import static com.example.spotify.MainActivity.shuffleBoolean;
 import static com.example.spotify.MainActivity.songNameMini;
 import static com.example.spotify.MainActivity.supposedFavoriteList;
+import static com.example.spotify.MyLibraryFragment.musicList;
 import static com.example.spotify.ServiceMusic.musicService;
 
 import android.annotation.SuppressLint;
@@ -127,6 +129,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     int scrollY = 0;
     boolean autoScroll = false;
     NavigationView navigationView;
+    public static String FLAG = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -623,7 +626,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     }
     private void getIntentMethod() {
         position = getIntent().getIntExtra("position", -1);
-
         currentPosition = getIntent().getIntExtra("currentPositionFromMain", 0);
         listSongs = musicFiles;
 
@@ -631,11 +633,24 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         if (sender!=null && sender.equals("albumDetails"))
         {
             listSongs = albumFiles;
-        } else{
-            listSongs = musicFiles  ;
+        }
+        else {
+            if (sender!=null && sender.equals("myLibDetails"))
+            {
+                listSongs = musicList;
+            } else {
+                if (sender!=null && sender.equals("leaderBoardDetails"))
+                {
+                    listSongs = musicListLeader;
+                }
+                else {
+                    listSongs = musicFiles;
+                }
+            }
+
         }
 
-        Log.e("Size: ", String.valueOf(musicFiles.size()));
+//        Log.e("Size: ", String.valueOf(musicFiles.size()));
         if (listSongs != null)
         {
             playPauseBtn.setImageResource(R.drawable.baseline_pause_24);

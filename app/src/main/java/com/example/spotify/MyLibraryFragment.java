@@ -36,7 +36,7 @@ public class MyLibraryFragment extends Fragment implements FragmentCallback {
     private LeaderBoardItem adapter;
     View view;
     MainActivity main;
-    private ArrayList<MusicFiles> musicList = new ArrayList<>();;
+    public static ArrayList<MusicFiles> musicList = new ArrayList<>();;
 
     public MyLibraryFragment() {
         // Required empty public constructor

@@ -53,7 +53,7 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
 
     boolean isDarkMode = true;
     private LeaderBoardItem adapter;
-    private ArrayList<MusicFiles> musicList;
+    public static ArrayList<MusicFiles> musicListLeader;
     private final ArrayList<HashMap<String, Object>> indexSortList[] = new ArrayList[1];
     public LeaderboardFragment() {
         // Required empty public constructor
@@ -92,13 +92,13 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
 
-        musicList = new ArrayList<MusicFiles>();
+        musicListLeader = new ArrayList<MusicFiles>();
         indexSortList[0] = new ArrayList<HashMap<String, Object>>();
-        Log.d("leaderboard", "onCreateView: " + musicList.size());
+        Log.d("leaderboard", "onCreateView: " + musicListLeader.size());
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
 
 
-        adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, true);
+        adapter = new LeaderBoardItem(getContext(), musicListLeader, musicFiles, true);
         list = view.findViewById(R.id.recycler_leaderboard);
         list.setLayoutManager(manager);
         list.setAdapter(adapter);
@@ -111,7 +111,7 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
 
     @Override
     public void onMessageFromMainToFrag(String sender, MusicFiles musicFile) {
-        musicList.add(musicFile);
+        musicListLeader.add(musicFile);
         Log.d("Leader Board", "onMessageFromMainToFrag: " + musicFile.title + "Music files:" + musicFiles.size());
         adapter.notifyDataSetChanged();
     }
@@ -131,7 +131,7 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
 
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
 
-        adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, isDarkMode);
+        adapter = new LeaderBoardItem(getContext(), musicListLeader, musicFiles, isDarkMode);
         list.setLayoutManager(manager);
         list.setAdapter(adapter);
 

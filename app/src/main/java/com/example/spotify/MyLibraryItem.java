@@ -1,7 +1,6 @@
 package com.example.spotify;
 
 import static com.example.spotify.MainActivity.musicFiles;
-import static com.example.spotify.ServiceMusic.*;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
@@ -32,7 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieHolder>/* implements Filterable */{
+public class MyLibraryItem extends RecyclerView.Adapter<MyLibraryItem.MyVieHolder> {
 
     private Context mContext;
     private ArrayList<MusicFiles> mFiles;
@@ -46,11 +45,30 @@ public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieH
 
     boolean isDarkMode;
 
-    LeaderBoardItem(Context mContext, ArrayList<MusicFiles> mFiles, ArrayList<MusicFiles> mList, boolean mode) {
+    MyLibraryItem(Context mContext, ArrayList<MusicFiles> mFiles, ArrayList<MusicFiles> mList, boolean mode) {
         this.mFiles = mFiles;
         this.mFilesNew = musicFiles;
         this.mContext = mContext;
         this.isDarkMode = mode;
+    }
+
+    public static String convert(String str) {
+        str = str.replaceAll("à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ", "a");
+        str = str.replaceAll("è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ", "e");
+        str = str.replaceAll("ì|í|ị|ỉ|ĩ", "i");
+        str = str.replaceAll("ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ", "o");
+        str = str.replaceAll("ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ", "u");
+        str = str.replaceAll("ỳ|ý|ỵ|ỷ|ỹ", "y");
+        str = str.replaceAll("đ", "d");
+
+        str = str.replaceAll("À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ", "A");
+        str = str.replaceAll("È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ", "E");
+        str = str.replaceAll("Ì|Í|Ị|Ỉ|Ĩ", "I");
+        str = str.replaceAll("Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ", "O");
+        str = str.replaceAll("Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ", "U");
+        str = str.replaceAll("Ỳ|Ý|Ỵ|Ỷ|Ỹ", "Y");
+        str = str.replaceAll("Đ", "D");
+        return str;
     }
 
     @NonNull
@@ -111,7 +129,7 @@ public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieH
                 }
                 Intent intent = new Intent(mContext, PlayerActivity.class);
                 intent.putExtra("position", position);
-                intent.putExtra("sender", "leaderBoardDetails");
+                intent.putExtra("sender", "myLibDetails");
                 mContext.startActivity(intent);
             }
         });
@@ -125,6 +143,11 @@ public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieH
 //
 //            }
 //        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return mFiles.size();
     }
 
     private void deleteFile(int position, View v) {
@@ -145,11 +168,6 @@ public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieH
         {
             Snackbar.make(v, "Can't delete File", Snackbar.LENGTH_LONG).show();
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return mFiles.size();
     }
 
     public class MyVieHolder extends RecyclerView.ViewHolder {
@@ -219,25 +237,4 @@ public class LeaderBoardItem extends RecyclerView.Adapter<LeaderBoardItem.MyVieH
             }
         };
     }
-
-    public static String convert(String str) {
-        str = str.replaceAll("à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ", "a");
-        str = str.replaceAll("è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ", "e");
-        str = str.replaceAll("ì|í|ị|ỉ|ĩ", "i");
-        str = str.replaceAll("ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ", "o");
-        str = str.replaceAll("ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ", "u");
-        str = str.replaceAll("ỳ|ý|ỵ|ỷ|ỹ", "y");
-        str = str.replaceAll("đ", "d");
-
-        str = str.replaceAll("À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ", "A");
-        str = str.replaceAll("È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ", "E");
-        str = str.replaceAll("Ì|Í|Ị|Ỉ|Ĩ", "I");
-        str = str.replaceAll("Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ", "O");
-        str = str.replaceAll("Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ", "U");
-        str = str.replaceAll("Ỳ|Ý|Ỵ|Ỷ|Ỹ", "Y");
-        str = str.replaceAll("Đ", "D");
-        return str;
-    }
 }
-
-
