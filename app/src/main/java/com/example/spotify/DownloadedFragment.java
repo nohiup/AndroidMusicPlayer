@@ -97,9 +97,8 @@ public class DownloadedFragment extends Fragment {
             if (files != null && files.length > 0) {
                 for (File file: files) {
                     String fileName = file.getName();
-                    nameList.add(fileName);
-                    authorList.add(fileName);
-                    fileNames.add(fileName);
+                    parseDownloadedFile(fileName);
+                    fileNames.add(file.getAbsolutePath());
                 }
             }
             else Log.e("Folder exists", "No file");
@@ -107,7 +106,9 @@ public class DownloadedFragment extends Fragment {
         else Log.e("Folder exists", "No folder");
     }
     private void parseDownloadedFile(String fileName){
-        String nameWithoutExtension = fileName.split(".")[0];
+        Log.d("fileName", fileName);
+        String nameWithoutExtension = fileName.split("\\.")[0];
+        if (!nameWithoutExtension.contains("-")) return;
         String songName = nameWithoutExtension.split("-")[0];
         String songAuthor = nameWithoutExtension.split("-")[1];
         nameList.add(songName);
