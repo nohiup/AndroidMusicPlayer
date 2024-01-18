@@ -1,8 +1,12 @@
 package com.example.spotify;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.transition.Slide;
 import android.util.Log;
@@ -70,6 +74,21 @@ public class LoginActivity extends AppCompatActivity implements savedState {
     public void onStart() {
         super.onStart();
         updateModeState();
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connected)
+        {
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.putExtra("connectivity", false);
+
+            startActivity(intent);
+
+            return;
+        }
+
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if(currentUser != null) {

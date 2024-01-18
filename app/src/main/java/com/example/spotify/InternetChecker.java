@@ -1,16 +1,14 @@
 package com.example.spotify;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
+import android.net.ConnectivityManager;
+
 import java.net.InetAddress;
 
 public class InternetChecker {
     public static Boolean isConnectedToInternet()
     {
-        try {
-            InetAddress ipAddr = InetAddress.getByName("google.com");
-            //You can replace it with your name
-            return !ipAddr.equals("");
-        } catch (Exception e) {
-            return false;
-        }
+        return true;
     }
 }
