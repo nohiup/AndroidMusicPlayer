@@ -1,16 +1,8 @@
 package com.example.spotify;
 
 import android.annotation.SuppressLint;
-import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,17 +12,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-public class downloadedAdapter extends RecyclerView.Adapter<downloadedAdapter.MyVieHolder>/* implements Filterable */{
+public class DownloadedAdapter extends RecyclerView.Adapter<DownloadedAdapter.MyVieHolder>/* implements Filterable */{
 
     private Context mContext;
 
@@ -48,7 +36,7 @@ public class downloadedAdapter extends RecyclerView.Adapter<downloadedAdapter.My
 
     boolean isDarkMode;
 
-    downloadedAdapter(Context mContext, ArrayList<String> song, ArrayList<String> author, ArrayList<String> filename, boolean mode) {
+    DownloadedAdapter(Context mContext, ArrayList<String> song, ArrayList<String> author, ArrayList<String> filename, boolean mode) {
         this.mSong = song;
         this.mName = author;
         this.mFile = filename;

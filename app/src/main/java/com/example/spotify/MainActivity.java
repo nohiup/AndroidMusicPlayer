@@ -34,6 +34,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -81,7 +83,10 @@ class ServiceMusic {
 }
 
 public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
-    static ArrayList<MusicFiles> musicFiles;
+    static public ArrayList<MusicFiles> musicFiles;
+    static String currentPlaylist;
+
+    ArrayList<MusicFiles> mainMs;
     public static ArrayList<MusicFiles> supposedFavoriteList;
     static boolean shuffleBoolean = false, repeatBoolean = false;
     static boolean isPlaying = false;
@@ -304,6 +309,19 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                     int id = item.getItemId();
 
+                    ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+                    NetworkInfo nInfo = cm.getActiveNetworkInfo();
+                    boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+                    if (!connected)
+                    {
+                        ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.mainFrameContainer, downloadedFragment);
+                        ft.commit();
+
+                        return true;
+                    }
+
                     if (id == R.id.Home)
                     {
                         ft = getSupportFragmentManager().beginTransaction();
@@ -377,6 +395,28 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public void onStart()
     {
         super.onStart();
+        boolean connectivity = getIntent().getBooleanExtra("connectivity", true);
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connectivity && connected)
+        {
+            startActivity(new Intent(this, LoginActivity.class));
+
+            return;
+        }
+
+        if (!connectivity)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            return;
+        }
+
         setAvatar();
         setUsername();
         try
@@ -463,6 +503,19 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connected)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            return true;
+        }
 
         if (id == R.id.logout_home)
         {
