@@ -173,7 +173,13 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             songNameMini.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    if (songNameMini.getText().toString().equals("Chưa chọn bài hát"))
+                    {
+                        return;
+                    }
                     int position = musicService.position;
+
                     Intent intent = new Intent(v.getContext(), PlayerActivity.class);
                     intent.putExtra("position", position);
                     intent.putExtra("currentPositionFromMain", musicService.getCurrentPosition());
