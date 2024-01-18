@@ -22,6 +22,15 @@
         <ImageView
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:id="@+id/skip_previous_bottom"
+            android:src="@drawable/baseline_skip_previous_24"
+            android:layout_toStartOf="@id/play_pause_miniPlayer"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            />
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:id="@+id/skip_next_bottom"
             android:src="@drawable/baseline_skip_next_24"
             android:layout_alignParentEnd="true"
@@ -47,7 +56,7 @@
             android:layout_toEndOf="@id/bottom_album_art"
             android:textSize="18sp"
             android:maxLines="1"
-            android:layout_toStartOf="@id/play_pause_miniPlayer"/>
+            android:layout_toStartOf="@id/skip_previous_bottom"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -60,7 +69,7 @@
             android:layout_below="@id/song_name_miniPlayer"
             android:textSize="18sp"
             android:maxLines="1"
-            android:layout_toStartOf="@id/play_pause_miniPlayer"/>
+            android:layout_toStartOf="@id/skip_previous_bottom"/>
 
 
 

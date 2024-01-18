@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public static String SONG_TO_FRAG = null;
     public static final String ARTIST_NAME = "ARTIST_NAME";
     public static final String SONG_NAME = "SONG_NAME";
-    public static ImageView nextBtnMini, albumArtMini;
+    public static ImageView nextBtnMini, albumArtMini, preBtnMini;
     public static TextView artistMini, songNameMini;
     public static FloatingActionButton playPauseBtnMini;
     FrameLayout miniPlayer;
@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             albumArtMini = findViewById(R.id.album_art_mini);
             nextBtnMini = findViewById(R.id.skip_next_bottom);
             playPauseBtnMini = findViewById(R.id.play_pause_miniPlayer);
+            preBtnMini = findViewById(R.id.skip_previous_bottom);
 
             albumFragment = albumFragment.newInstance("album-Fragment");
             drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
@@ -172,6 +173,9 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                 int position = musicService.position;
                 artistMini.setText(musicService.musicFiles.get(position).getArtist());
                 songNameMini.setText(musicService.musicFiles.get(position).getTitle());
+                playPauseBtnMini.setEnabled(true);
+                nextBtnMini.setEnabled(true);
+                preBtnMini.setEnabled(true);
                 if (musicService.isPlaying()) {
                     playPauseBtnMini.setImageResource(R.drawable.baseline_pause_24);
 //                    Toast.makeText(this, "pause mini", Toast.LENGTH_SHORT).show();
@@ -200,11 +204,21 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                     }
                 });
 
+                preBtnMini.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent serviceIntent = new Intent(v.getContext(), MusicService.class);
+                        serviceIntent.putExtra("ActionName", "previous");
+                        v.getContext().startService(serviceIntent);
+                    }
+                });
+
             } else {
                 artistMini.setText("Chưa chọn bài hát");
                 songNameMini.setText("Chưa chọn bài hát");
                 playPauseBtnMini.setEnabled(false);
                 nextBtnMini.setEnabled(false);
+                preBtnMini.setEnabled(false);
             }
 
             bottomNavigationView = (BottomNavigationView)findViewById(R.id.bottomNavigationView);
@@ -617,7 +631,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
 
         final long ONE_MEGABYTE = 1024*1024;
 //        Log.e("thumbnail", mFiles.get(position).getAlbum());
-        storageReference.child("Thumbnails/" + musicFiles.get(position).getthumbnailName())
+        storageReference.child("Thumbnails/" + musicService.musicFiles.get(position).getthumbnailName())
                 .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     @Override
                     public void onSuccess(byte[] bytes) {
