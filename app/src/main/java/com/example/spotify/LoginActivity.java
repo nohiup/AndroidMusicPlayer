@@ -1,6 +1,12 @@
 package com.example.spotify;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.transition.Slide;
 import android.util.Log;
@@ -44,7 +50,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Arrays;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements savedState {
 
     private Button login, signup, forgot;
     private EditText pwd, email;
@@ -52,14 +58,37 @@ public class LoginActivity extends AppCompatActivity {
     private ImageView gmailIcon;
     private Slide slide;
 
+    boolean isDarkMode = true;
+
     //new var
     private FirebaseAuth firebaseAuth;
     private GoogleSignInClient googleSignInClient;
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveModeStateData(isDarkMode);
+    }
 
     @Override
     public void onStart() {
         super.onStart();
+        updateModeState();
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connected)
+        {
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.putExtra("connectivity", false);
+
+            startActivity(intent);
+
+            return;
+        }
+
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if(currentUser != null) {
@@ -321,6 +350,39 @@ public class LoginActivity extends AppCompatActivity {
             case "yahoo.com": return "Yahoo";
             case "hotmail.com": return "Microsoft";
             default: return null;
+        }
+    }
+
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode(){
+        findViewById(R.id.loginAct).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+
+        if (isDarkMode)
+        {
+            findViewById(R.id.loginAct).setBackgroundColor(getResources().getColor(R.color.dark_200));
+
         }
     }
 }

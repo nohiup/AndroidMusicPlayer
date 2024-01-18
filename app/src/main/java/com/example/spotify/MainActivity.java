@@ -34,16 +34,20 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.TextView;
 
@@ -63,19 +67,27 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class ServiceMusic {
     public static MusicService musicService;
 }
 
 public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
-    static ArrayList<MusicFiles> musicFiles;
+    static public ArrayList<MusicFiles> musicFiles;
+    static String currentPlaylist;
+
+    ArrayList<MusicFiles> mainMs;
+    public static ArrayList<MusicFiles> supposedFavoriteList;
     static boolean shuffleBoolean = false, repeatBoolean = false;
     static boolean isPlaying = false;
     boolean isDarkMode = true;
@@ -83,8 +95,10 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     FirebaseUser thisUser = FirebaseAuth.getInstance().getCurrentUser();
     ConstraintLayout mainAct;
     FragmentTransaction ft;
+    DownloadedFragment downloadedFragment;
     HomeFragment homeFragment;
     LeaderboardFragment ldFragment;
+    MyLibraryFragment mlFragment;
     LinearLayout topNav;
     SearchFragment searchFragment;
     PlaylistFragment playlistFragment;
@@ -113,6 +127,8 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public static FloatingActionButton playPauseBtnMini;
     FrameLayout miniPlayer;
     ActionPlaying actionPlaying;
+    private ArrayList<MusicFiles> musicList;
+    private final ArrayList<HashMap<String, Object>> indexSortList[] = new ArrayList[1];
 
     static String current_fragment = "home";
 
@@ -134,9 +150,11 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             playPauseBtnMini = findViewById(R.id.play_pause_miniPlayer);
             preBtnMini = findViewById(R.id.skip_previous_bottom);
 
+            downloadedFragment = downloadedFragment.newInstance("ld-fragment", "test");
             albumFragment = albumFragment.newInstance("album-Fragment");
             drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
             ldFragment = ldFragment.newInstance("ld-fragment", "test");
+            mlFragment = mlFragment.newInstance("ml-fragment", "test-2");
             mainAct = findViewById(R.id.main_act);
             topNav = findViewById(R.id.top_nav);
             navigationView = findViewById(R.id.home_nav);
@@ -161,7 +179,13 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             songNameMini.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    if (songNameMini.getText().toString().equals("Chưa chọn bài hát"))
+                    {
+                        return;
+                    }
                     int position = musicService.position;
+
                     Intent intent = new Intent(v.getContext(), PlayerActivity.class);
                     intent.putExtra("position", position);
                     intent.putExtra("currentPositionFromMain", musicService.getCurrentPosition());
@@ -299,6 +323,19 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                     int id = item.getItemId();
 
+                    ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+                    NetworkInfo nInfo = cm.getActiveNetworkInfo();
+                    boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+                    if (!connected)
+                    {
+                        ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.mainFrameContainer, downloadedFragment);
+                        ft.commit();
+
+                        return true;
+                    }
+
                     if (id == R.id.Home)
                     {
                         ft = getSupportFragmentManager().beginTransaction();
@@ -372,6 +409,28 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     public void onStart()
     {
         super.onStart();
+        boolean connectivity = getIntent().getBooleanExtra("connectivity", true);
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connectivity && connected)
+        {
+            startActivity(new Intent(this, LoginActivity.class));
+
+            return;
+        }
+
+        if (!connectivity)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            return;
+        }
+
         setAvatar();
         setUsername();
         try
@@ -382,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         {
             saveModeStateData(isDarkMode);
             updateModeState();
-
         }
 
 
@@ -414,11 +472,16 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             ft.commit();
 
             bottomNavigationView.setSelectedItemId(R.id.Playlist);
-
             return;
         }
 
+        ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.mainFrameContainer, homeFragment);
+        ft.commit();
 
+        bottomNavigationView.setSelectedItemId(R.id.Home);
+        current_fragment = "home";
+        homeFragment.onMessageFromMainToFrag("main", isDarkMode);
     }
 
     @Override
@@ -439,11 +502,34 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         {
             searchFragment.onMessageFromMainToFrag("main", isDarkMode);
         }
+
+        if (sender.equals("leaderBoard") && request.equals("mode"))
+        {
+            ldFragment.onMessageFromMainToFrag("main", isDarkMode);
+        }
+
+        if (sender.equals("library") && request.equals("mode"))
+        {
+            mlFragment.onMessageFromMainToFrag("main", isDarkMode);
+        }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+        NetworkInfo nInfo = cm.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+
+        if (!connected)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            return true;
+        }
 
         if (id == R.id.logout_home)
         {
@@ -488,11 +574,38 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             return true;
         }
 
+        if (id == R.id.downloaded)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            current_fragment = "downloaded";
+
+            return true;
+        }
+
         if (id == R.id.leaderBoard)
         {
+            fetchDataFromFirestore();
             ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrameContainer, ldFragment);
             ft.commit();
+
+            current_fragment = "leaderBoard";
+
+            return true;
+        }
+
+        if (id == R.id.myLibrary)
+        {
+
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, mlFragment);
+            ft.commit();
+            fetchDataForUserPlaylist();
+
+            current_fragment = "library";
 
             return true;
         }
@@ -532,8 +645,15 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         setMode();
     }
 
+
     private void setMode()
     {
+        findViewById(R.id.card_bottom_player).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        TextView songArtist = (TextView)findViewById(R.id.song_artist_miniPlayer);
+        TextView song = (TextView)findViewById(R.id.song_name_miniPlayer);
+
+        song.setTextColor(getResources().getColor(R.color.cream_200));
+        songArtist.setTextColor(getResources().getColor(R.color.cream_200));
         mainAct.setBackgroundColor(getResources().getColor(R.color.cream_200));
         bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.lavender_200));
         topNav.setBackgroundColor(getResources().getColor(R.color.lavender_200));
@@ -550,10 +670,28 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
 
         navTextView.setTextColor(getResources().getColor(R.color.cream_200));
 
-        if (current_fragment.equals("home"))
+        Menu menu = navigationView.getMenu();
+        MenuItem item = menu.findItem(R.id.mode);
+
+        item.setIcon(R.drawable.night_mode);
+        item.setTitle("Night mode");
+
+        if (current_fragment == "home")
             homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+        if (current_fragment.equals("search"))
+            searchFragment.onMessageFromMainToFrag("main", isDarkMode);
+        if (current_fragment == "library")
+            mlFragment.onMessageFromMainToFrag("MAIN", isDarkMode);
+        if (current_fragment == "leaderBoard")
+            ldFragment.onMessageFromMainToFrag("MAIN", isDarkMode);
+
         if (isDarkMode)
         {
+            item.setIcon(R.drawable.light_mode);
+            item.setTitle("Light mode");
+            song.setTextColor(getResources().getColor(R.color.cream_200));
+            songArtist.setTextColor(getResources().getColor(R.color.cream_200));
+            findViewById(R.id.card_bottom_player).setBackgroundColor(getResources().getColor(R.color.dark_200));
             navigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
             mainAct.setBackgroundColor(getResources().getColor(R.color.dark_gray));
             bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
@@ -640,5 +778,142 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                     }
                 });
 
+    }
+
+    private void fetchDataFromFirestore(){
+        musicList = new ArrayList<>();
+        indexSortList[0] = new ArrayList<>();
+        FirebaseFirestore.getInstance().collection("Music").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    int pos = 0;
+                    for (QueryDocumentSnapshot d: task.getResult()){
+                        String title = d.getString("name");
+                        String artist = d.getString("singer");
+                        //                                String path = d.getString("source");
+                        String album = d.getString("album");
+                        String id = d.getString("id");
+                        String duration = "";
+                        String path = d.getString("source");
+                        String genre = d.getString("genre");
+                        String language = d.getString("language");
+                        String releaseDate = d.getString("releaseDate");
+                        String thumbnailName = d.getString("thumbnailName");
+
+                        MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
+
+
+                        //pos = 0 here is the position of the element in musiclist?
+
+                        int counter = 0;
+                        ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
+                        if (likeShowingList == null || likeShowingList.isEmpty()){
+                            counter = 0;
+                        }
+                        else{
+                            counter = likeShowingList.size();
+                        }
+                        final int finalCounter = counter;
+                        final int finalPos = pos;
+                        c.setLike(counter);
+                        musicList.add(c);
+                        indexSortList[0].add(new HashMap<String, Object>(){{
+                            put("id", d.getString("id"));
+                            put("like", finalCounter);
+                            put("index", finalPos);
+                        }});
+                        pos++;
+                    }
+
+                    //sorting
+                    ArrayList<HashMap<String, Object>> sortedList = (ArrayList<HashMap<String, Object>>) indexSortList[0].stream()
+                            .sorted(Comparator.comparingInt(m -> (int)m.get("like")))
+                            .collect(Collectors.toList());
+
+                    int size = sortedList.size();
+                    ArrayList<MusicFiles> finalMusicList = new ArrayList<MusicFiles>();
+                    for (int i = sortedList.size()-1; i >=0; i--) {
+                        finalMusicList.add(musicList.get((int) sortedList.get(i).get("index")));
+                        Log.d("Error check", finalMusicList.get(size-i-1).getTitle().toString());
+                    }
+
+                    for (MusicFiles c: finalMusicList)
+                    {
+                        ldFragment.onMessageFromMainToFrag("MAIN", c);
+                    }
+                    Log.d("leaderboard", "onCreateView: " + musicList.size());
+//                    adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
+//                    list = view.findViewById(R.id.recycler_leaderboard);
+//                    list.setAdapter(adapter);
+//                    adapter.notifyDataSetChanged();
+                }
+            }
+
+        });
+    }
+
+    private void fetchDataForUserPlaylist() {
+        supposedFavoriteList = new ArrayList<>();
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("Albums").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()){
+                            if (!task.getResult().exists()){
+                                //This user haven't add any file to playlist\
+                                //TODO: Add UI showing for this exception (anything)
+                            }
+                            else {
+                                //At least not null, but maybe empty
+                                ArrayList<String> musicIdList = (ArrayList<String>) task.getResult().get("songList");
+                                if (musicIdList.isEmpty()) {
+                                    //TODO: Show the same thing as above one
+                                }
+                                else {
+                                    for (String id : musicIdList) {
+                                        firestore.collection("Music").whereEqualTo("id", id).get().addOnCompleteListener(
+                                                new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if (task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot d: task.getResult()){
+                                                                String title = d.getString("name");
+                                                                String artist = d.getString("singer");
+                                                                //                                String path = d.getString("source");
+                                                                String album = d.getString("album");
+                                                                String id = d.getString("id");
+                                                                String duration = "";
+                                                                String path = d.getString("source");
+                                                                String genre = d.getString("genre");
+                                                                String language = d.getString("language");
+                                                                String releaseDate = d.getString("releaseDate");
+                                                                String thumbnailName = d.getString("thumbnailName");
+
+                                                                MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
+                                                                int counter = 0;
+                                                                ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
+                                                                if (likeShowingList == null || likeShowingList.isEmpty()){
+                                                                    counter = 0;
+                                                                }
+                                                                else{
+                                                                    counter = likeShowingList.size();
+                                                                }
+                                                                c.setLike(counter);
+                                                                supposedFavoriteList.add(c);
+                                                                mlFragment.onMessageFromMainToFrag("MAIN", c);
+                                                            }
+                                                        }
+                                                        //done here.
+                                                    }
+                                                });
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                });
     }
 }

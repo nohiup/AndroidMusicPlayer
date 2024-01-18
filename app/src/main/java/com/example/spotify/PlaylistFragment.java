@@ -87,6 +87,11 @@ public class PlaylistFragment extends Fragment implements FragmentCallback {
     }
 
     @Override
+    public void onMusicFromMainToFrag(String sender, MusicFiles musicFiles) {
+
+    }
+
+    @Override
     public void onMessageFromMainToFrag(String sender, boolean isDarkMode) {
 
     }

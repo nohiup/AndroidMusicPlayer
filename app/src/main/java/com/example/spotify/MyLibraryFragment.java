@@ -2,60 +2,43 @@ package com.example.spotify;
 
 import static com.example.spotify.MainActivity.musicFiles;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link LeaderboardFragment#newInstance} factory method to
+ * Use the {@link MyLibraryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LeaderboardFragment extends Fragment implements FragmentCallback {
+
+public class MyLibraryFragment extends Fragment implements FragmentCallback {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static ArrayList<MusicFiles> supposedFavoriteList;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    MainActivity main;
-
-    private View view;
-
     private RecyclerView list;
-
-    boolean isDarkMode = true;
     private LeaderBoardItem adapter;
-    private ArrayList<MusicFiles> musicList;
-    private final ArrayList<HashMap<String, Object>> indexSortList[] = new ArrayList[1];
-    public LeaderboardFragment() {
+    View view;
+    MainActivity main;
+    private ArrayList<MusicFiles> musicList = new ArrayList<>();;
+
+    public MyLibraryFragment() {
         // Required empty public constructor
     }
 
@@ -65,16 +48,15 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment LeaderboardFragment.
+     * @return A new instance of fragment MyLibraryFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static LeaderboardFragment newInstance(String param1, String param2) {
-        LeaderboardFragment fragment = new LeaderboardFragment();
+    public static MyLibraryFragment newInstance(String param1, String param2) {
+        MyLibraryFragment fragment = new MyLibraryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
-
         return fragment;
     }
 
@@ -87,32 +69,26 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
         }
         main = (MainActivity) getActivity();
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
-
-        musicList = new ArrayList<MusicFiles>();
-        indexSortList[0] = new ArrayList<HashMap<String, Object>>();
-        Log.d("leaderboard", "onCreateView: " + musicList.size());
+        // Inflate the layout for this fragment
+        view = inflater.inflate(R.layout.fragment_my_library, container, false);
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
-
-
         adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, true);
         list = view.findViewById(R.id.recycler_leaderboard);
+        main.onMessageFromFragToMain("library", "mode");
+
         list.setLayoutManager(manager);
         list.setAdapter(adapter);
-
-        main.onMessageFromFragToMain("leaderBoard", "mode");
-
+        
         return view;
     }
 
-
     @Override
-    public void onMessageFromMainToFrag(String sender, MusicFiles musicFile) {
-        musicList.add(musicFile);
-        Log.d("Leader Board", "onMessageFromMainToFrag: " + musicFile.title + "Music files:" + musicFiles.size());
+    public void onMessageFromMainToFrag(String sender, MusicFiles musicFiles) {
+        musicList.add(musicFiles);
         adapter.notifyDataSetChanged();
     }
 
@@ -127,10 +103,7 @@ public class LeaderboardFragment extends Fragment implements FragmentCallback {
         {
             return;
         }
-        this.isDarkMode = isDarkMode;
-
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
-
         adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, isDarkMode);
         list.setLayoutManager(manager);
         list.setAdapter(adapter);

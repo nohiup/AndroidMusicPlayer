@@ -11,9 +11,11 @@ import static com.example.spotify.MainActivity.playPauseBtnMini;
 import static com.example.spotify.MainActivity.repeatBoolean;
 import static com.example.spotify.MainActivity.shuffleBoolean;
 import static com.example.spotify.MainActivity.songNameMini;
+import static com.example.spotify.MainActivity.supposedFavoriteList;
 import static com.example.spotify.ServiceMusic.musicService;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -22,6 +24,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -35,11 +39,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
@@ -95,11 +101,12 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.appcompat.widget.Toolbar;
 
 
-public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, ActionPlaying, NavigationView.OnNavigationItemSelectedListener, ServiceConnection {
+public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, ActionPlaying, NavigationView.OnNavigationItemSelectedListener, ServiceConnection, savedState {
     TextView song_name, artist_name, duration_played, duration_total;
     ImageView cover_art, nextBtn, prevBtn, backBtn, shuffleBtn, repeatBtn;
     FloatingActionButton playPauseBtn;
     Toolbar toolbar;
+    boolean added = false;
     DrawerLayout drawerLayout;
     ScrollView lyricsScroll;
     SeekBar seekBar;
@@ -118,6 +125,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     boolean isDarkMode = true;
     int scrollX = 0;
     int scrollY = 0;
+    boolean autoScroll = false;
+    NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +141,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         lyrics = findViewById(R.id.lyrics);
         lyricsScroll = findViewById(R.id.lyricsScroll);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout_player);
-        NavigationView navigationView = findViewById(R.id.nav_player_view);
+        navigationView = findViewById(R.id.nav_player_view);
         navigationView.setNavigationItemSelectedListener(this);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav,
                 R.string.close_nav);
@@ -212,6 +221,13 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             }
         });
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateModeState();
+    }
+
     @Override
     protected void onResume() {
         Intent intent = new Intent(this, MusicService.class);
@@ -225,6 +241,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     protected void onPause() {
         super.onPause();
         unbindService(this);
+        saveModeStateData(isDarkMode);
     }
 
     private void prevThreadBtn() {
@@ -263,6 +280,21 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             uri = Uri.parse(listSongs.get(position).getPath());
             musicService.createMediaPlayer(position);
             metaData(uri);
+            for (MusicFiles e: supposedFavoriteList)
+            {
+                added = false;
+                Log.d("Cmp", "e: " + e.title + "listSong: " + listSongs.get(position).title);
+                if (e.title.equals(listSongs.get(position).title))
+                {
+                    Menu menu = navigationView.getMenu();
+                    MenuItem item = menu.getItem(R.id.addToPlaylist);
+
+                    item.setTitle("Added to playlist");
+
+                    added = true;
+                }
+            }
+
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -312,6 +344,21 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             uri = Uri.parse(listSongs.get(position).getPath());
             musicService.createMediaPlayer(position);
             metaData(uri);
+
+            for (MusicFiles e: supposedFavoriteList)
+            {
+                added = false;
+                Log.d("Cmp", "e: " + e.title + "listSong: " + listSongs.get(position).title);
+                if (e.title.equals(listSongs.get(position).title))
+                {
+                    Menu menu = navigationView.getMenu();
+                    MenuItem item = menu.getItem(R.id.addToPlaylist);
+
+                    item.setTitle("Added to playlist");
+
+                    added = true;
+                }
+            }
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -359,7 +406,20 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     position = ((position + 1) % listSongs.size());
                 }
             }
+            for (MusicFiles e: supposedFavoriteList)
+            {
+                added = false;
+                Log.d("Cmp", "e: " + e.title + "listSong: " + listSongs.get(position).title);
+                if (e.title.equals(listSongs.get(position).title))
+                {
+                    Menu menu = navigationView.getMenu();
+                    MenuItem item = menu.getItem(R.id.addToPlaylist);
 
+                    item.setTitle("Added to playlist");
+
+                    added = true;
+                }
+            }
             uri = Uri.parse(listSongs.get(position).getPath());
             musicService.createMediaPlayer(position);
             metaData(uri);
@@ -411,6 +471,20 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             uri = Uri.parse(listSongs.get(position).getPath());
             musicService.createMediaPlayer(position);
             metaData(uri);
+            for (MusicFiles e: supposedFavoriteList)
+            {
+                added = false;
+                Log.d("Cmp", "e: " + e.title + "listSong: " + listSongs.get(position).title);
+                if (e.title.equals(listSongs.get(position).title))
+                {
+                    Menu menu = navigationView.getMenu();
+                    MenuItem item = menu.getItem(R.id.addToPlaylist);
+
+                    item.setTitle("Added to playlist");
+
+                    added = true;
+                }
+            }
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -502,6 +576,20 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         }
         else
         {
+            for (MusicFiles e: supposedFavoriteList)
+            {
+                added = false;
+                Log.d("Cmp", "e: " + e.title + "listSong: " + listSongs.get(position).title);
+                if (e.title.equals(listSongs.get(position).title))
+                {
+                    Menu menu = navigationView.getMenu();
+                    MenuItem item = menu.getItem(R.id.addToPlaylist);
+
+                    item.setTitle("Added to playlist");
+
+                    added = true;
+                }
+            }
             playPauseBtn.setImageResource(R.drawable.baseline_pause_24);
             musicService.showNotification(R.drawable.baseline_pause_24);
             playPauseBtnMini.setImageResource(R.drawable.baseline_pause_24);
@@ -599,13 +687,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                                     ImageView gradient = findViewById(R.id.imageViewGradient);
                                     RelativeLayout mContainer = findViewById(R.id.mContainer);
                                     gradient.setBackgroundResource(R.drawable.gradient_bg);
-                                    mContainer.setBackgroundResource(R.drawable.main_bg);
                                     GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
                                             new int[]{swatch.getRgb(), 0x00000000});
                                     gradient.setBackground(gradientDrawable);
                                     GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
                                             new int[]{swatch.getRgb(), swatch.getRgb()});
-                                    mContainer.setBackground(gradientDrawableBg);
                                     song_name.setTextColor(swatch.getTitleTextColor());
                                     artist_name.setTextColor(swatch.getBodyTextColor());
                                 }
@@ -614,13 +700,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                                     ImageView gradient = findViewById(R.id.imageViewGradient);
                                     RelativeLayout mContainer = findViewById(R.id.mContainer);
                                     gradient.setBackgroundResource(R.drawable.gradient_bg);
-                                    mContainer.setBackgroundResource(R.drawable.main_bg);
                                     GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
                                             new int[]{0xff000000, 0x00000000});
                                     gradient.setBackground(gradientDrawable);
                                     GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
                                             new int[]{0xff000000, 0xff000000});
-                                    mContainer.setBackground(gradientDrawableBg);
                                     song_name.setTextColor(Color.WHITE);
                                     artist_name.setTextColor(Color.DKGRAY);
                                 }
@@ -830,10 +914,30 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                 item.setTitle("Night mode");
             }
 
+            setMode();
+
             return true;
         }
 
+        if (id == R.id.autoScroll)
+        {
+            autoScroll = ! autoScroll;
+            item.setTitle("Auto Scroll on");
+            if (autoScroll)
+            {
+                autoSlide();
+                item.setTitle("Auto Scroll off");
+            }
+        }
+
         if  (id == R.id.addToPlaylist) {
+            if (added)
+            {
+                Toast.makeText(this, "Already added!", Toast.LENGTH_SHORT).show();
+
+                return true;
+            }
+
             final String currentId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             final CollectionReference albumRef = FirebaseFirestore.getInstance().collection("Albums");
             final ArrayList<String>[] docList = new ArrayList[1];
@@ -890,6 +994,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             @Override
             public void run() {
                 scrollY = lyricsScroll.getScrollY() + 1;
+                if (!autoScroll)
+                {
+                    return;
+                }
 
                 if (scrollY > lyricsScroll.getBottom())
                 {
@@ -959,6 +1067,65 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         } catch (IOException e) {
             Log.d("result", "setSongLyric: failed");
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode(){
+        View headerView = navigationView.getHeaderView(0);
+
+        Menu menu = navigationView.getMenu();
+        MenuItem item = menu.findItem(R.id.mode);
+
+        item.setIcon(R.drawable.night_mode);
+        item.setTitle("Night mode");
+
+        navigationView.setBackgroundColor(getResources().getColor(R.color.cream_200));
+        navigationView.setItemTextColor(ColorStateList.valueOf(getResources().getColor(R.color.black_300)));
+        navigationView.setItemIconTintList(ColorStateList.valueOf(getResources().getColor(R.color.black_300)));
+        LinearLayout navView = headerView.findViewById(R.id.nav_player_view);
+        navView.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        TextView navTextView = headerView.findViewById(R.id.name_holder);
+        navTextView.setTextColor(getResources().getColor(R.color.cream_200));
+        findViewById(R.id.mContainer).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        findViewById(R.id.relative_layout_for_buttom).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        lyrics.setTextColor(getResources().getColor(R.color.dark_200));
+        lyricsScroll.setBackgroundColor(getResources().getColor(R.color.cream_200));
+
+        if (isDarkMode) {
+            item.setIcon(R.drawable.light_mode);
+            item.setTitle("Light mode");
+            lyrics.setTextColor(getResources().getColor(R.color.cream_200));
+            lyricsScroll.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            findViewById(R.id.relative_layout_for_buttom).setBackgroundColor(getResources().getColor(R.color.dark_200));
+            findViewById(R.id.mContainer).setBackgroundColor(getResources().getColor(R.color.dark_200));
+            navigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            navTextView.setTextColor(getResources().getColor(R.color.dark_200));
+            navView.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            navigationView.setItemTextColor(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+            navigationView.setItemIconTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
         }
     }
 }

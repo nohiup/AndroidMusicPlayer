@@ -1,6 +1,8 @@
 package com.example.spotify;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.transition.Slide;
 import android.util.Log;
@@ -21,13 +23,15 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity implements savedState {
 
     private Button signup;
     private EditText pwd, email, confirmPassword;
 
     private FirebaseAuth firebaseAuth;
     private Slide slide;
+
+    private boolean isDarkMode = false;
 
     @Override
     public void onStart() {
@@ -38,6 +42,14 @@ public class SignUpActivity extends AppCompatActivity {
         if(currentUser != null){
             currentUser.reload();
         }
+
+        updateModeState();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveModeStateData(isDarkMode);
     }
 
     @Override
@@ -116,6 +128,38 @@ public class SignUpActivity extends AppCompatActivity {
             case "yahoo.com": return "Yahoo";
             case "hotmail.com": return "Microsoft";
             default: return null;
+        }
+    }
+
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode(){
+        findViewById(R.id.passwordSignUp).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+
+        if (isDarkMode)
+        {
+            findViewById(R.id.passwordSignUp).setBackgroundColor(getResources().getColor(R.color.dark_200));
         }
     }
 }
