@@ -76,6 +76,13 @@ public class downloadedAdapter extends RecyclerView.Adapter<downloadedAdapter.My
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String[] data = new String[2];
+                data[0] = holder.file_name.getText().toString();
+                data[1] = holder.author.getText().toString();
+
+                Intent i = new Intent(mContext, DownloadedPlayActivity.class);
+                i.putExtra("data", data);
+                mContext.startActivity(i);
             }
         });
 //        holder.menuMore.setOnClickListener(new View.OnClickListener() {

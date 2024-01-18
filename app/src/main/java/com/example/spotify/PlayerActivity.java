@@ -844,7 +844,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         if (id == R.id.download){
             StorageReference fileRef =  FirebaseStorage.getInstance().getReferenceFromUrl(playing.getPath());
-            File localFile = new File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), songID + ".mp3");
+            File localFile = new File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), playing.getTitle()+ "-" + playing.getArtist()+ ".mp3");
             downloadProcessing(fileRef, localFile);
         }
 
