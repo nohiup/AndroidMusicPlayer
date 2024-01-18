@@ -45,30 +45,30 @@ public class AlbumDetails extends AppCompatActivity {
         recyclerView.setAdapter(albumDetailsAdapter);
 
         //Firestore album for all
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        firestore.collection("Albums").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()){
-                    albumSongs.clear();
-                    //Of course only 1 doc for favorite
-                    for (QueryDocumentSnapshot doc: task.getResult()){
-                        ArrayList<MusicFiles> showing = (ArrayList<MusicFiles>) doc.get("songList");
-                        albumSongs.addAll(showing);
-                    }
-                    //Fetch_ed albumSongs.
-                    albumDetailsAdapter.notifyDataSetChanged();
-                }
-            }
-        });
-        //Dèaul
-//        int j = 0;
-//        for(int i = 0; i < musicFiles.size();i++){
-//            if(albumName.equals(musicFiles.get(i).getAlbum())){
-//                albumSongs.add(j, musicFiles.get(i));
-//                j++;
+//        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+//        firestore.collection("Albums").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//            @Override
+//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                if(task.isSuccessful()){
+//                    albumSongs.clear();
+//                    //Of course only 1 doc for favorite
+//                    for (QueryDocumentSnapshot doc: task.getResult()){
+//                        ArrayList<MusicFiles> showing = (ArrayList<MusicFiles>) doc.get("songList");
+//                        albumSongs.addAll(showing);
+//                    }
+//                    //Fetch_ed albumSongs.
+//                    albumDetailsAdapter.notifyDataSetChanged();
+//                }
 //            }
-//        }
+//        });
+        //Dèaul
+        int j = 0;
+        for(int i = 0; i < musicFiles.size();i++){
+            if(albumName.equals(musicFiles.get(i).getAlbum())){
+                albumSongs.add(j, musicFiles.get(i));
+                j++;
+            }
+        }
 //        try {
 //            byte[] image = getAlbumArt(albumSongs.get(0).getPath());
 //            if(image != null){

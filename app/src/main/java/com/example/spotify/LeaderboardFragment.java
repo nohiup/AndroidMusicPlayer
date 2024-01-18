@@ -42,8 +42,6 @@ public class LeaderboardFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private View view;
-
     private RecyclerView list;
     private MusicAdapterHorizontal adapter;
     private ArrayList<MusicFiles> musicList;
@@ -138,27 +136,23 @@ public class LeaderboardFragment extends Fragment {
 //                    adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
 //                    list = view.findViewById(R.id.recycler_leaderboard);
 //                    list.setAdapter(adapter);
-//                    adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();
                 }
             }
-
         });
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
-
+        View view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
         musicList = new ArrayList<MusicFiles>();
         indexSortList[0] = new ArrayList<HashMap<String, Object>>();
         fetchDataFromFirestore();
         Log.d("leaderboard", "onCreateView: " + musicList.size());
 
-
         adapter = new MusicAdapterHorizontal(getContext(), musicList, false);
-        list = view.findViewById(R.id.recycler_leaderboard);
+        list = (RecyclerView) view.findViewById(R.id.recycler_leaderboard);
         list.setAdapter(adapter);
-
         return view;
     }
 
