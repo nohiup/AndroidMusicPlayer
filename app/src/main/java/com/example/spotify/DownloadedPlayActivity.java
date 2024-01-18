@@ -1,5 +1,6 @@
 package com.example.spotify;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,7 +31,7 @@ public class DownloadedPlayActivity extends AppCompatActivity {
 
 
     private TextView name,artist,playDur, realDur;
-    private ImageView clickablePlayPause;
+    private ImageView clickablePlayPause, backBtn;
 
     private MediaPlayer mediaPlayer;
     private SeekBar seekBar;
@@ -47,6 +48,7 @@ public class DownloadedPlayActivity extends AppCompatActivity {
         seekBar = findViewById(R.id.seekBar);
         playDur = findViewById(R.id.durationPlayed);
         realDur = findViewById(R.id.durationTotal);
+        backBtn = findViewById(R.id.back_btn);
 
         clickablePlayPause = findViewById(R.id.play_pause);
 
@@ -73,6 +75,15 @@ public class DownloadedPlayActivity extends AppCompatActivity {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.pause();
+
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        });
 
         clickablePlayPause.setOnClickListener(new View.OnClickListener() {
             @Override

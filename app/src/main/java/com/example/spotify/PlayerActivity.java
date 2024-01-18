@@ -30,7 +30,9 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -74,6 +76,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -104,7 +107,7 @@ import androidx.appcompat.widget.Toolbar;
 
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, ActionPlaying, NavigationView.OnNavigationItemSelectedListener, ServiceConnection, savedState {
-    TextView song_name, artist_name, duration_played, duration_total;
+    TextView song_name, artist_name, duration_played, duration_total, like_value;
     ImageView cover_art, nextBtn, prevBtn, backBtn, shuffleBtn, repeatBtn;
     FloatingActionButton playPauseBtn;
     Toolbar toolbar;
@@ -143,6 +146,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         lyrics = findViewById(R.id.lyrics);
         lyricsScroll = findViewById(R.id.lyricsScroll);
+        like_value = findViewById(R.id.likeValue);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout_player);
         navigationView = findViewById(R.id.nav_player_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -229,6 +233,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     protected void onStart() {
         super.onStart();
         updateModeState();
+        setUsername();
+        setAvatar();
     }
 
     @Override
@@ -297,7 +303,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     added = true;
                 }
             }
-
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -362,6 +368,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     added = true;
                 }
             }
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -409,6 +416,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     position = ((position + 1) % listSongs.size());
                 }
             }
+            if (supposedFavoriteList == null)
+            {
+                supposedFavoriteList = new ArrayList<>();
+            }
             for (MusicFiles e: supposedFavoriteList)
             {
                 added = false;
@@ -426,6 +437,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             uri = Uri.parse(listSongs.get(position).getPath());
             musicService.createMediaPlayer(position);
             metaData(uri);
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -488,6 +500,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     added = true;
                 }
             }
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -662,6 +675,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         startService(intent);
 
     }
+    FirebaseUser thisUser = FirebaseAuth.getInstance().getCurrentUser();
     private void initViews() {
         song_name = findViewById(R.id.song_name);
         artist_name = findViewById(R.id.song_artist);
@@ -735,6 +749,68 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                                 .into(cover_art);
                         song_name.setTextColor(Color.WHITE);
                         artist_name.setTextColor(Color.DKGRAY);
+                    }
+                });
+    }
+    private Bitmap getBitmap(int drawableRes) {
+        Drawable drawable = getResources().getDrawable(drawableRes);
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, 50,50);
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private void setUsername() {
+        Task<DocumentSnapshot> documentSnapshotTask = FirebaseFirestore.getInstance().collection("User")
+                .document(thisUser.getUid())
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        View headerView = navigationView.getHeaderView(0);
+                        TextView username = headerView.findViewById(R.id.name_holder);
+                        if (task.isSuccessful()){
+                            String name = task.getResult().get("name").toString();
+                            Log.d("Name", name);
+                            username.setText(name);
+                        }
+                    }
+                });
+    }
+
+    private void setAvatar() {
+        Task<DocumentSnapshot> doc = db.collection("User").document(thisUser.getUid()).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        Log.d("ava", "OnComplete");
+                        if (task.isSuccessful()) {
+                            View headerView = navigationView.getHeaderView(0);
+                            ImageView ava = headerView.findViewById(R.id.ava);
+                            Log.d("ava", "IsSuccess");
+                            if (task.getResult().get("avatarDir") == null) {
+                                Log.d("ava", "NotNull");
+                                Bitmap selectedImageBitmap = getBitmap(R.drawable.ava_1);
+                                ava.setImageBitmap(selectedImageBitmap);
+                            } else {
+                                String avatarDir = task.getResult().get("avatarDir").toString();
+                                final long ONE_MEGABYTE = 1024 * 1024;
+                                Log.d("ava", avatarDir);
+                                storageReference.child("Avatars").child(thisUser.getUid() + ".jpg")
+                                        .getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                            @Override
+                                            public void onSuccess(byte[] bytes) {
+                                                Log.d("ava", avatarDir);
+                                                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                                ava.setImageBitmap(bmp);
+                                            }
+                                        });
+                            }
+                        }
                     }
                 });
     }
@@ -1035,6 +1111,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 //        Toast.makeText(this, "Connected" + musicService, Toast.LENGTH_SHORT).show();
         seekBar.setMax(musicService.getDuration() / 1000);
         metaData(uri);
+        like_value.setText("Likes: " + listSongs.get(position).like);
+        setSongLyric(listSongs.get(position).title);
         song_name.setText(listSongs.get(position).getTitle());
         artist_name.setText(listSongs.get(position).getArtist());
         musicService.onCompleted();

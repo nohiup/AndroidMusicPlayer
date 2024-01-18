@@ -285,10 +285,19 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                                     String language = d.getString("language");
                                     String releaseDate = d.getString("releaseDate");
                                     String thumbnailName = d.getString("thumbnailName");
+                                    int counter = 0;
+                                    ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
+                                    if (likeShowingList == null || likeShowingList.isEmpty()){
+                                        counter = 0;
+                                    }
+                                    else{
+                                        counter = likeShowingList.size();
+                                    }
+
 
                                     MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
                                     //                                Log.e("Duration: ", c.getDuration());
-
+                                    c.setLike(counter);
                                     // and we will pass this object class
                                     // inside our arraylist which we have
                                     // created for recycler view.

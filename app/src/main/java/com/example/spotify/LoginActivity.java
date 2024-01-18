@@ -201,7 +201,6 @@ public class LoginActivity extends AppCompatActivity implements savedState {
 
 
                 login.setBackground(getResources().getDrawable(R.drawable.round_btn));
-                Toast.makeText(LoginActivity.this, "Please check your password or register!", Toast.LENGTH_SHORT).show();
             }
         });
 
