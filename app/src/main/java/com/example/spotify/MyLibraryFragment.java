@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -33,6 +34,8 @@ public class MyLibraryFragment extends Fragment implements FragmentCallback {
     private String mParam2;
     private RecyclerView list;
     private LeaderBoardItem adapter;
+    View view;
+    MainActivity main;
     private ArrayList<MusicFiles> musicList = new ArrayList<>();;
 
     public MyLibraryFragment() {
@@ -64,17 +67,19 @@ public class MyLibraryFragment extends Fragment implements FragmentCallback {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        main = (MainActivity) getActivity();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_my_library, container, false);
+        view = inflater.inflate(R.layout.fragment_my_library, container, false);
         LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
-
         adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, true);
         list = view.findViewById(R.id.recycler_leaderboard);
+        main.onMessageFromFragToMain("library", "mode");
+
         list.setLayoutManager(manager);
         list.setAdapter(adapter);
         
@@ -94,6 +99,22 @@ public class MyLibraryFragment extends Fragment implements FragmentCallback {
 
     @Override
     public void onMessageFromMainToFrag(String sender, boolean isDarkMode) {
+        if (list == null)
+        {
+            return;
+        }
+        LinearLayoutManager manager = new LinearLayoutManager(this.getContext());
+        adapter = new LeaderBoardItem(getContext(), musicList, musicFiles, isDarkMode);
+        list.setLayoutManager(manager);
+        list.setAdapter(adapter);
 
+        TextView tv = view.findViewById(R.id.leaderBoardText);
+
+        tv.setTextColor(getResources().getColor(R.color.dark_200));
+
+        if (isDarkMode)
+        {
+            tv.setTextColor(getResources().getColor(R.color.cream_200));
+        }
     }
 }

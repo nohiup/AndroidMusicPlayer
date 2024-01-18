@@ -39,11 +39,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.TextView;
 
@@ -80,8 +82,7 @@ class ServiceMusic {
 
 public class MainActivity extends AppCompatActivity implements MainCallback, NavigationView.OnNavigationItemSelectedListener, savedState{
     static ArrayList<MusicFiles> musicFiles;
-    private MusicAdapterHorizontal supposedFavoriteAdapter;
-    private static ArrayList<MusicFiles> supposedFavoriteList;
+    public static ArrayList<MusicFiles> supposedFavoriteList;
     static boolean shuffleBoolean = false, repeatBoolean = false;
     static boolean isPlaying = false;
     boolean isDarkMode = true;
@@ -89,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     FirebaseUser thisUser = FirebaseAuth.getInstance().getCurrentUser();
     ConstraintLayout mainAct;
     FragmentTransaction ft;
+    DownloadedFragment downloadedFragment;
     HomeFragment homeFragment;
     LeaderboardFragment ldFragment;
     MyLibraryFragment mlFragment;
@@ -142,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             nextBtnMini = findViewById(R.id.skip_next_bottom);
             playPauseBtnMini = findViewById(R.id.play_pause_miniPlayer);
 
+            downloadedFragment = downloadedFragment.newInstance("ld-fragment", "test");
             albumFragment = albumFragment.newInstance("album-Fragment");
             drawerLayout = (DrawerLayout)findViewById(R.id.main_act_drawer);
             ldFragment = ldFragment.newInstance("ld-fragment", "test");
@@ -378,7 +381,6 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         {
             saveModeStateData(isDarkMode);
             updateModeState();
-
         }
 
 
@@ -410,11 +412,16 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             ft.commit();
 
             bottomNavigationView.setSelectedItemId(R.id.Playlist);
-
             return;
         }
 
+        ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.mainFrameContainer, homeFragment);
+        ft.commit();
 
+        bottomNavigationView.setSelectedItemId(R.id.Home);
+        current_fragment = "home";
+        homeFragment.onMessageFromMainToFrag("main", isDarkMode);
     }
 
     @Override
@@ -434,6 +441,16 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         if (sender.equals("SEARCH-FRAG") && request.equals("mode"))
         {
             searchFragment.onMessageFromMainToFrag("main", isDarkMode);
+        }
+
+        if (sender.equals("leaderBoard") && request.equals("mode"))
+        {
+            ldFragment.onMessageFromMainToFrag("main", isDarkMode);
+        }
+
+        if (sender.equals("library") && request.equals("mode"))
+        {
+            mlFragment.onMessageFromMainToFrag("main", isDarkMode);
         }
     }
 
@@ -484,12 +501,25 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             return true;
         }
 
+        if (id == R.id.downloaded)
+        {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, downloadedFragment);
+            ft.commit();
+
+            current_fragment = "downloaded";
+
+            return true;
+        }
+
         if (id == R.id.leaderBoard)
         {
             fetchDataFromFirestore();
             ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrameContainer, ldFragment);
             ft.commit();
+
+            current_fragment = "leaderBoard";
 
             return true;
         }
@@ -501,6 +531,8 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             ft.replace(R.id.mainFrameContainer, mlFragment);
             ft.commit();
             fetchDataForUserPlaylist();
+
+            current_fragment = "library";
 
             return true;
         }
@@ -540,8 +572,15 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
         setMode();
     }
 
+
     private void setMode()
     {
+        findViewById(R.id.card_bottom_player).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        TextView songArtist = (TextView)findViewById(R.id.song_artist_miniPlayer);
+        TextView song = (TextView)findViewById(R.id.song_name_miniPlayer);
+
+        song.setTextColor(getResources().getColor(R.color.cream_200));
+        songArtist.setTextColor(getResources().getColor(R.color.cream_200));
         mainAct.setBackgroundColor(getResources().getColor(R.color.cream_200));
         bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.lavender_200));
         topNav.setBackgroundColor(getResources().getColor(R.color.lavender_200));
@@ -558,10 +597,28 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
 
         navTextView.setTextColor(getResources().getColor(R.color.cream_200));
 
-        if (current_fragment.equals("home"))
+        Menu menu = navigationView.getMenu();
+        MenuItem item = menu.findItem(R.id.mode);
+
+        item.setIcon(R.drawable.night_mode);
+        item.setTitle("Night mode");
+
+        if (current_fragment == "home")
             homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+        if (current_fragment.equals("search"))
+            searchFragment.onMessageFromMainToFrag("main", isDarkMode);
+        if (current_fragment == "library")
+            mlFragment.onMessageFromMainToFrag("MAIN", isDarkMode);
+        if (current_fragment == "leaderBoard")
+            ldFragment.onMessageFromMainToFrag("MAIN", isDarkMode);
+
         if (isDarkMode)
         {
+            item.setIcon(R.drawable.light_mode);
+            item.setTitle("Light mode");
+            song.setTextColor(getResources().getColor(R.color.cream_200));
+            songArtist.setTextColor(getResources().getColor(R.color.cream_200));
+            findViewById(R.id.card_bottom_player).setBackgroundColor(getResources().getColor(R.color.dark_200));
             navigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
             mainAct.setBackgroundColor(getResources().getColor(R.color.dark_gray));
             bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.dark_200));
@@ -724,7 +781,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
     }
 
     private void fetchDataForUserPlaylist() {
-
+        supposedFavoriteList = new ArrayList<>();
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         firestore.collection("Albums").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -771,6 +828,7 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                                                                     counter = likeShowingList.size();
                                                                 }
                                                                 c.setLike(counter);
+                                                                supposedFavoriteList.add(c);
                                                                 mlFragment.onMessageFromMainToFrag("MAIN", c);
                                                             }
                                                         }

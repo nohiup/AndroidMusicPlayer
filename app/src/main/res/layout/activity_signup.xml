@@ -5,9 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".LoginActivity"
-    android:background="@drawable/ic_launcher_background"
-    android:orientation="vertical">
+    tools:context=".SignUpActivity"
+    android:background="@color/dark_200"
+    android:orientation="vertical"
+    android:id="@+id/passwordSignUp">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/signupUI_guideline_top"

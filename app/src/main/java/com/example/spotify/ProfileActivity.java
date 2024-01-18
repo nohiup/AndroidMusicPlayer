@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -38,11 +39,12 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements savedState {
 
     private Button save, cancel, changePassword;
     private EditText username;
     private ImageView ava;
+    boolean isDarkMode = true;
     FirebaseUser thisUser = FirebaseAuth.getInstance().getCurrentUser();
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     ActivityResultLauncher<Intent> launchGalleryActivity;
@@ -156,6 +158,18 @@ public class ProfileActivity extends AppCompatActivity {
         ava = findViewById(R.id.avatar);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateModeState();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveModeStateData(isDarkMode);
+    }
+
     private Bitmap getBitmap(int drawableRes) {
         Drawable drawable = getResources().getDrawable(drawableRes);
         Canvas canvas = new Canvas();
@@ -225,5 +239,51 @@ public class ProfileActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode(){
+        findViewById(R.id.profileAct).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+
+        save.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        save.setTextColor(getResources().getColor(R.color.dark_200));
+        cancel.setTextColor(getResources().getColor(R.color.dark_200));
+        cancel.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+
+        changePassword.setTextColor(getResources().getColor(R.color.dark_200));
+        changePassword.setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        if (isDarkMode)
+        {
+            findViewById(R.id.profileAct).setBackgroundColor(getResources().getColor(R.color.dark_200));
+            save.setBackgroundColor(getResources().getColor(R.color.dark_200));
+            save.setTextColor(getResources().getColor(R.color.cream_200));
+            cancel.setTextColor(getResources().getColor(R.color.cream_200));
+            cancel.setBackgroundColor(getResources().getColor(R.color.dark_200));
+
+            changePassword.setTextColor(getResources().getColor(R.color.cream_200));
+            changePassword.setBackgroundColor(getResources().getColor(R.color.dark_200));
+        }
     }
 }

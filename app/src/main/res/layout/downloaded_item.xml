@@ -4,33 +4,21 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    android:padding="5dp">
-
-    <TextView
-        android:layout_width="40dp"
-        android:textColor="@color/cream"
-        android:layout_height="match_parent"
-        android:id="@+id/ranking"
-        android:fontFamily="@font/svn_aguda_black"
-        android:textSize="18dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-    </TextView>
+    android:layout_margin="10dp">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_margin="10dp"
         app:cornerRadius="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/ranking"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/IvIconView"
+            android:background="@drawable/anh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal|center_vertical" />
@@ -53,7 +41,7 @@
             android:singleLine="true"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:layout_margin="5dp"
+            android:layout_margin="10dp"
             android:fontFamily="@font/svn_aguda_black"/>
 
         <TextView
@@ -64,21 +52,8 @@
             android:singleLine="true"
             android:layout_weight="1"
             android:textColor="@color/white"
-            android:layout_margin="5dp"
+            android:layout_margin="10dp"
             android:fontFamily="@font/svn_aguda_black"/>
-
-        <TextView
-            android:id="@+id/like"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:autoSizeTextType="uniform"
-            android:singleLine="true"
-            android:layout_weight="1"
-            android:textColor="@color/white"
-            android:layout_margin="5dp"
-            android:fontFamily="@font/svn_aguda_black"/>
-
-
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

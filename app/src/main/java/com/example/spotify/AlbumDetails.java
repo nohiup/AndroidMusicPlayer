@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import static com.example.spotify.MainActivity.musicFiles;
 import static com.example.spotify.MainActivity.shuffleBoolean;
 
+import android.app.Activity;
+import android.content.SharedPreferences;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -23,11 +25,13 @@ import com.google.firebase.storage.StorageReference;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class AlbumDetails extends AppCompatActivity {
+public class AlbumDetails extends AppCompatActivity implements savedState {
 
     RecyclerView recyclerView;
     ImageView albumPhoto;
     String albumName;
+
+    boolean isDarkMode = true;
 
     AlbumDetailsAdapter albumDetailsAdapter;
     FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -80,10 +84,22 @@ public class AlbumDetails extends AppCompatActivity {
 //        }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveModeStateData(isDarkMode);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateModeState();
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         if(!(albumSongs.size()<1)){
             albumDetailsAdapter = new AlbumDetailsAdapter(this, albumSongs);
             recyclerView.setAdapter(albumDetailsAdapter);
@@ -97,5 +113,37 @@ public class AlbumDetails extends AppCompatActivity {
         byte[] art = retriever.getEmbeddedPicture();
         retriever.release();
         return art;
+    }
+
+    @Override
+    public void saveModeStateData(boolean isDarkMode)
+    {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor saveModeContainerEditor = saveModeContainer.edit();
+        String key = "mode";
+        saveModeContainerEditor.putBoolean("mode", isDarkMode);
+        saveModeContainerEditor.commit();
+    }
+
+    @Override
+    public void updateModeState() {
+        SharedPreferences saveModeContainer = getSharedPreferences("SaveModeState", Activity.MODE_PRIVATE);
+        boolean defaultValue = isDarkMode;
+        String key = "mode";
+        if (( saveModeContainer != null ) && saveModeContainer.contains(key))
+        {
+            this.isDarkMode = saveModeContainer.getBoolean(key, defaultValue);
+        }
+
+        setMode();
+    }
+
+    private void setMode(){
+        findViewById(R.id.albumAct).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+
+        if (isDarkMode)
+        {
+            findViewById(R.id.albumAct).setBackgroundColor(getResources().getColor(R.color.lavender_200));
+        }
     }
 }
