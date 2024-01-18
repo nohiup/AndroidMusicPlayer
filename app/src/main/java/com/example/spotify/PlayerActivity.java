@@ -104,7 +104,7 @@ import androidx.appcompat.widget.Toolbar;
 
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, ActionPlaying, NavigationView.OnNavigationItemSelectedListener, ServiceConnection, savedState {
-    TextView song_name, artist_name, duration_played, duration_total;
+    TextView song_name, artist_name, duration_played, duration_total, like_value;
     ImageView cover_art, nextBtn, prevBtn, backBtn, shuffleBtn, repeatBtn;
     FloatingActionButton playPauseBtn;
     Toolbar toolbar;
@@ -143,6 +143,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         lyrics = findViewById(R.id.lyrics);
         lyricsScroll = findViewById(R.id.lyricsScroll);
+        like_value = findViewById(R.id.likeValue);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout_player);
         navigationView = findViewById(R.id.nav_player_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -297,7 +298,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     added = true;
                 }
             }
-
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -362,6 +363,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     added = true;
                 }
             }
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -409,6 +411,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     position = ((position + 1) % listSongs.size());
                 }
             }
+            if (supposedFavoriteList == null)
+            {
+                supposedFavoriteList = new ArrayList<>();
+            }
             for (MusicFiles e: supposedFavoriteList)
             {
                 added = false;
@@ -426,6 +432,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             uri = Uri.parse(listSongs.get(position).getPath());
             musicService.createMediaPlayer(position);
             metaData(uri);
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -488,6 +495,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                     added = true;
                 }
             }
+            like_value.setText("Likes: " + listSongs.get(position).like);
             song_name.setText(listSongs.get(position).getTitle());
             artist_name.setText(listSongs.get(position).getArtist());
             songNameMini.setText(listSongs.get(position).getTitle());
@@ -1035,6 +1043,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 //        Toast.makeText(this, "Connected" + musicService, Toast.LENGTH_SHORT).show();
         seekBar.setMax(musicService.getDuration() / 1000);
         metaData(uri);
+        like_value.setText("Likes: " + listSongs.get(position).like);
+        setSongLyric(listSongs.get(position).title);
         song_name.setText(listSongs.get(position).getTitle());
         artist_name.setText(listSongs.get(position).getArtist());
         musicService.onCompleted();

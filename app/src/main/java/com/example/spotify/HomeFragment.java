@@ -104,7 +104,6 @@ public class HomeFragment extends Fragment implements FragmentCallback{
         balladSong = (RecyclerView) view.findViewById(R.id.ballad);
         youngGenView = (RecyclerView) view.findViewById(R.id.youngPeople);
 
-        main.onMessageFromFragToMain("HOME-FRAG", "mode");
 
         vietnameseSongAdapter = new MusicAdapter(this.getContext(), musicFile, vietnam, isDarkMode);
         internationalSongAdapter = new MusicAdapter(this.getContext(), musicFile, international, isDarkMode);
@@ -124,6 +123,8 @@ public class HomeFragment extends Fragment implements FragmentCallback{
         vietnameseSong.setAdapter(vietnameseSongAdapter);
         balladSong.setAdapter(balladSongAdapter);
         youngGenView.setAdapter(youngGenAdapter);
+
+        main.onMessageFromFragToMain("HOME-FRAG", "mode");
 
         return view;
     }

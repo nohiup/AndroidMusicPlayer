@@ -1,5 +1,6 @@
 package com.example.spotify;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -30,10 +32,11 @@ public class DownloadedPlayActivity extends AppCompatActivity {
 
 
     private TextView name,artist,playDur, realDur;
-    private ImageView clickablePlayPause;
+    private ImageView clickablePlayPause, backBtn;
 
     private MediaPlayer mediaPlayer;
     private SeekBar seekBar;
+
 
 
     @Override
@@ -47,6 +50,7 @@ public class DownloadedPlayActivity extends AppCompatActivity {
         seekBar = findViewById(R.id.seekBar);
         playDur = findViewById(R.id.durationPlayed);
         realDur = findViewById(R.id.durationTotal);
+        backBtn = findViewById(R.id.back_btn);
 
         clickablePlayPause = findViewById(R.id.play_pause);
 
@@ -74,16 +78,25 @@ public class DownloadedPlayActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mediaPlayer.pause();
+
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        });
         clickablePlayPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mediaPlayer.isPlaying()){
                     mediaPlayer.pause();
-                    clickablePlayPause.setImageResource(R.drawable.play_btn);
+                    clickablePlayPause.setBackgroundResource(R.drawable.baseline_play_arrow_24);
                 }
-                else if (!mediaPlayer.isPlaying()){
+                else {
                     mediaPlayer.start();
-                    clickablePlayPause.setImageResource(R.drawable.pause_btn);
+                    clickablePlayPause.setBackgroundResource(R.drawable.baseline_pause_24);
+
                 }
             }
         });

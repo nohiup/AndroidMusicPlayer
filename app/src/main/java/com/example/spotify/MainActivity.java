@@ -285,10 +285,20 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
                                     String language = d.getString("language");
                                     String releaseDate = d.getString("releaseDate");
                                     String thumbnailName = d.getString("thumbnailName");
+                                    int counter = 0;
+                                    ArrayList<String> likeShowingList = (ArrayList<String>) d.get("likeList");
+                                    if (likeShowingList == null || likeShowingList.isEmpty()){
+                                        counter = 0;
+                                    }
+                                    else{
+                                        counter = likeShowingList.size();
+                                    }
+                                    final int finalCounter = counter;
 
                                     MusicFiles c = new MusicFiles(path, title, artist, album, duration, id, genre, language, releaseDate, thumbnailName);
                                     //                                Log.e("Duration: ", c.getDuration());
 
+                                    c.setLike(counter);
                                     // and we will pass this object class
                                     // inside our arraylist which we have
                                     // created for recycler view.
@@ -475,13 +485,20 @@ public class MainActivity extends AppCompatActivity implements MainCallback, Nav
             return;
         }
 
-        ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.mainFrameContainer, homeFragment);
-        ft.commit();
+        try {
 
-        bottomNavigationView.setSelectedItemId(R.id.Home);
-        current_fragment = "home";
-        homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrameContainer, homeFragment);
+            ft.commit();
+
+            bottomNavigationView.setSelectedItemId(R.id.Home);
+            current_fragment = "home";
+            homeFragment.onMessageFromMainToFrag("main", isDarkMode);
+        } catch (Exception e)
+        {
+
+        }
+
     }
 
     @Override
