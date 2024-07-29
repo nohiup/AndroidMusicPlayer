@@ -14,4 +14,6 @@ Features:
 
 - Leaderboards
 
+- Light, dark modes.
+
   
